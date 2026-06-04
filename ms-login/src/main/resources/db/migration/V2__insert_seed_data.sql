@@ -1,9 +1,9 @@
 -- Roles
 INSERT INTO bd_login.rol (codigo, nombre) VALUES 
 ('PASAJERO', 'Pasajero'),
-('AGENTE_ADUANA', 'Agente de Aduana'),
-('AGENTE_PDI', 'Agente PDI'),
-('AGENTE_SAG', 'Agente SAG'),
+('FUNC_ADUANA', 'Agente de Aduana'),
+('FUNC_PDI', 'Agente PDI'),
+('FUNC_SAG', 'Agente SAG'),
 ('ADMIN', 'Administrador');
 
 -- Permisos
@@ -20,16 +20,16 @@ INSERT INTO bd_login.rol_permiso (id_rol, id_permiso) VALUES
 ((SELECT id FROM bd_login.rol WHERE codigo = 'PASAJERO'), (SELECT id FROM bd_login.permiso WHERE codigo = 'REPORTE_VER'));
 
 INSERT INTO bd_login.rol_permiso (id_rol, id_permiso) VALUES
-((SELECT id FROM bd_login.rol WHERE codigo = 'AGENTE_ADUANA'), (SELECT id FROM bd_login.permiso WHERE codigo = 'DECLARACION_VALIDAR')),
-((SELECT id FROM bd_login.rol WHERE codigo = 'AGENTE_ADUANA'), (SELECT id FROM bd_login.permiso WHERE codigo = 'VEHICULO_APROBAR')),
-((SELECT id FROM bd_login.rol WHERE codigo = 'AGENTE_ADUANA'), (SELECT id FROM bd_login.permiso WHERE codigo = 'INSPECCION_REALIZAR'));
+((SELECT id FROM bd_login.rol WHERE codigo = 'FUNC_ADUANA'), (SELECT id FROM bd_login.permiso WHERE codigo = 'DECLARACION_VALIDAR')),
+((SELECT id FROM bd_login.rol WHERE codigo = 'FUNC_ADUANA'), (SELECT id FROM bd_login.permiso WHERE codigo = 'VEHICULO_APROBAR')),
+((SELECT id FROM bd_login.rol WHERE codigo = 'FUNC_ADUANA'), (SELECT id FROM bd_login.permiso WHERE codigo = 'INSPECCION_REALIZAR'));
 
 INSERT INTO bd_login.rol_permiso (id_rol, id_permiso) VALUES
-((SELECT id FROM bd_login.rol WHERE codigo = 'AGENTE_PDI'), (SELECT id FROM bd_login.permiso WHERE codigo = 'INSPECCION_REALIZAR')),
-((SELECT id FROM bd_login.rol WHERE codigo = 'AGENTE_PDI'), (SELECT id FROM bd_login.permiso WHERE codigo = 'ALERTA_CREAR'));
+((SELECT id FROM bd_login.rol WHERE codigo = 'FUNC_PDI'), (SELECT id FROM bd_login.permiso WHERE codigo = 'INSPECCION_REALIZAR')),
+((SELECT id FROM bd_login.rol WHERE codigo = 'FUNC_PDI'), (SELECT id FROM bd_login.permiso WHERE codigo = 'ALERTA_CREAR'));
 
 INSERT INTO bd_login.rol_permiso (id_rol, id_permiso) VALUES
-((SELECT id FROM bd_login.rol WHERE codigo = 'AGENTE_SAG'), (SELECT id FROM bd_login.permiso WHERE codigo = 'INSPECCION_REALIZAR'));
+((SELECT id FROM bd_login.rol WHERE codigo = 'FUNC_SAG'), (SELECT id FROM bd_login.permiso WHERE codigo = 'INSPECCION_REALIZAR'));
 
 INSERT INTO bd_login.rol_permiso (id_rol, id_permiso) VALUES
 ((SELECT id FROM bd_login.rol WHERE codigo = 'ADMIN'), (SELECT id FROM bd_login.permiso WHERE codigo = 'DECLARACION_VALIDAR')),
@@ -50,7 +50,7 @@ INSERT INTO bd_login.usuario (tipo_documento, nro_documento, nombre_completo, em
 -- Asignar roles
 INSERT INTO bd_login.usuario_rol VALUES
 ((SELECT id FROM bd_login.usuario WHERE nro_documento='8888888-1'), (SELECT id FROM bd_login.rol WHERE codigo='PASAJERO')),
-((SELECT id FROM bd_login.usuario WHERE nro_documento='8888888-2'), (SELECT id FROM bd_login.rol WHERE codigo='AGENTE_ADUANA')),
-((SELECT id FROM bd_login.usuario WHERE nro_documento='8888888-3'), (SELECT id FROM bd_login.rol WHERE codigo='AGENTE_PDI')),
-((SELECT id FROM bd_login.usuario WHERE nro_documento='8888888-4'), (SELECT id FROM bd_login.rol WHERE codigo='AGENTE_SAG')),
+((SELECT id FROM bd_login.usuario WHERE nro_documento='8888888-2'), (SELECT id FROM bd_login.rol WHERE codigo='FUNC_ADUANA')),
+((SELECT id FROM bd_login.usuario WHERE nro_documento='8888888-3'), (SELECT id FROM bd_login.rol WHERE codigo='FUNC_PDI')),
+((SELECT id FROM bd_login.usuario WHERE nro_documento='8888888-4'), (SELECT id FROM bd_login.rol WHERE codigo='FUNC_SAG')),
 ((SELECT id FROM bd_login.usuario WHERE nro_documento='9999999-9'), (SELECT id FROM bd_login.rol WHERE codigo='ADMIN'));

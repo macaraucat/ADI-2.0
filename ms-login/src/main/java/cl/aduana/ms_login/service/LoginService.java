@@ -28,8 +28,7 @@ public class LoginService {
     public Usuario autenticar(String doc, String password) {
         log.info("Iniciando autenticación para documento: {}", doc);
         
-        Usuario u = repo.findByNroDocumentoAndActivoTrue(doc)
-                .orElseThrow(() -> {
+        Usuario u = repo.findByNroDocumentoAndActivoTrue(doc).orElseThrow(() -> {
                     log.warn("Usuario no encontrado o inactivo: {}", doc);
                     return new ResourceNotFoundException("Usuario no encontrado o inactivo");
                 });
@@ -48,7 +47,7 @@ public class LoginService {
 
     @Transactional
     public Usuario registrarUsuario(UsuarioDTO dto) {
-        log.info("👤 Registrando nuevo PASAJERO - Documento: {}, Email: {}", dto.getNroDocumento(), dto.getEmail());
+        log.info("Registrando nuevo PASAJERO - Documento: {}, Email: {}", dto.getNroDocumento(), dto.getEmail());
         
         validarNuevo(dto);
         
@@ -57,8 +56,7 @@ public class LoginService {
         u.setActivo(true);
         u.setFechaCreacion(LocalDateTime.now());
         
-        Rol rol = rolRepo.findByCodigo("PASAJERO")
-                .orElseThrow(() -> {
+        Rol rol = rolRepo.findByCodigo("PASAJERO").orElseThrow(() -> {
                     log.error("Error crítico: Rol PASAJERO no configurado en BD");
                     return new ResourceNotFoundException("Rol PASAJERO no configurado");
                 });
