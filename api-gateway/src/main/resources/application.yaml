@@ -1,0 +1,31 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+
+  ## Desde aquí se define el gateway
+  cloud:
+    gateway:
+      routes:
+        - id: ms-login
+          uri: http://localhost:8081
+          predicates:
+            - Path=/api/v1/login/** #La ruta de un controlador del ms
+        - id: ms-vehicle
+          uri: http://localhost:8082
+        - id: ms-travel
+          uri: http://localhost:8083          
+        - id: ms-risk
+          uri: http://localhost:8084
+        - id: ms-report
+          uri: http://localhost:8085
+        - id: ms-notification
+          uri: http://localhost:8086
+
+          ## Opcional
+          # predicates:
+          #   -  Path=/api/v1/login/**
+          # filters:
+          #   - StripPrefix=2     
