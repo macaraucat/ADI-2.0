@@ -6,20 +6,6 @@ CREATE TABLE bd_login.rol (
     nombre VARCHAR(50) NOT NULL
 );
 
-CREATE TABLE bd_login.permiso (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    codigo VARCHAR(30) UNIQUE NOT NULL,
-    descripcion VARCHAR(100)
-);
-
-CREATE TABLE bd_login.rol_permiso (
-    id_rol BIGINT NOT NULL,
-    id_permiso BIGINT NOT NULL,
-    PRIMARY KEY (id_rol, id_permiso),
-    FOREIGN KEY (id_rol) REFERENCES bd_login.rol(id) ON DELETE CASCADE,
-    FOREIGN KEY (id_permiso) REFERENCES bd_login.permiso(id) ON DELETE CASCADE
-);
-
 CREATE TABLE bd_login.usuario (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     tipo_documento VARCHAR(10) NOT NULL,

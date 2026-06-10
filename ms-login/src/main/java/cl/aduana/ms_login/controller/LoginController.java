@@ -2,21 +2,19 @@ package cl.aduana.ms_login.controller;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import cl.aduana.common.dto.response.UsuarioClientResponseDTO;
 import cl.aduana.ms_login.dto.*;
+import cl.aduana.ms_login.mapper.UsuarioMapper;
 import cl.aduana.ms_login.model.Usuario;
 import cl.aduana.ms_login.service.LoginService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.Parameters;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -25,7 +23,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@Tag(name = "Autenticación y Usuarios", description = "API para gestión de usuarios, autenticación y control de permisos en el sistema de aduanas")
+@Tag(name = "Autenticación y Usuarios", description = "API para gestión de usuarios y autenticación")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/login")
@@ -33,8 +31,9 @@ import lombok.extern.slf4j.Slf4j;
 public class LoginController {
 
     private final LoginService service;
+    private final UsuarioMapper mapper;
 
-    // 1. AUTENTICACIÓN
+    // AUTENTICACIÓN
     @Operation(summary = "Iniciar sesión", description = "Autentica un usuario basado en su número de documento y contraseña.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Login exitoso", content = @Content(mediaType = "application/json", schema = @Schema(implementation = LoginResponseDTO.class))),
@@ -54,7 +53,7 @@ public class LoginController {
         }
     }
 
-    // 2. REGISTRO DE USUARIOS
+    // REGISTRO DE USUARIOS
     @Operation(summary = "Registrar nuevo usuario estándar", 
             description = "Crea un nuevo usuario con rol de PASAJERO.")
     @ApiResponses({
@@ -98,66 +97,52 @@ public class LoginController {
             throw e;
         }
     }
-
-    // 3. GESTIÓN DE USUARIOS
-    @Operation(summary = "Listar todos los usuarios", 
-            description = "Obtiene la lista completa de usuarios registrados en el sistema (activos e inactivos).")
-    @ApiResponse(responseCode = "200", description = "Listado exitoso", content = @Content(schema = @Schema(implementation = Usuario.class)))
+    
+    // GESTIÓN DE USUARIOS
+    @Operation(summary = "Listar todos los usuarios", description = "Obtiene la lista completa de usuarios.")
+    @ApiResponse(responseCode = "200", description = "Listado exitoso", content = @Content(schema = @Schema(implementation = UsuarioClientResponseDTO.class)))
     @GetMapping("/usuarios")
-    public ResponseEntity<List<Usuario>> listar() {
+    public ResponseEntity<List<UsuarioClientResponseDTO>> listar() {
         log.debug("GET /usuarios - Listando todos los usuarios");
-        List<Usuario> u = service.listarUsuarios();
-        log.debug("Total de usuarios encontrados: {}", u.size());
-        return ResponseEntity.ok(u);
+        List<Usuario> usuarios = service.listarUsuarios();
+        
+        List<UsuarioClientResponseDTO> dtos = usuarios.stream()
+                .map(mapper::toClientResponse)
+                .toList();
+                
+        log.debug("Total de usuarios encontrados: {}", dtos.size());
+        return ResponseEntity.ok(dtos);
     }
 
-    @Operation(summary = "Obtener usuario por ID interno", 
-            description = "Busca un usuario específico usando su ID interno del sistema.")
+    @Operation(summary = "Obtener usuario por ID", description = "Busca un usuario específico usando su ID.")
     @Parameter(name = "id", description = "ID interno del usuario", example = "1", required = true)
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Usuario encontrado", content = @Content(schema = @Schema(implementation = Usuario.class))),
+            @ApiResponse(responseCode = "200", description = "Usuario encontrado", content = @Content(schema = @Schema(implementation = UsuarioClientResponseDTO.class))),
             @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
     })
     @GetMapping("/usuarios/{id}")
-    public ResponseEntity<Usuario> obtenerPorId(@PathVariable Long id) {
+    public ResponseEntity<UsuarioClientResponseDTO> obtenerPorId(@PathVariable Long id) {
         log.debug("GET /usuarios/{} - Buscando usuario por ID", id);
-        Usuario u = service.obtenerPorId(id);
-        log.debug("Usuario encontrado: {} ({})", u.getNroDocumento(), u.getNombreCompleto());
-        return ResponseEntity.ok(u);
+        Usuario usuario = service.obtenerPorId(id);
+        log.debug("Usuario encontrado: {} ({})", usuario.getNroDocumento(), usuario.getNombreCompleto());
+        return ResponseEntity.ok(mapper.toClientResponse(usuario));
     }
 
-    @Operation(summary = "Obtener usuario por número de documento", 
-            description = "Busca un usuario utilizando su número de documento (RUN, DNI o Pasaporte).")
-    @Parameter(name = "nroDocumento", description = "Número de documento del usuario (RUN, DNI, Pasaporte)", example = "12345678-9", required = true)
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Usuario encontrado", content = @Content(schema = @Schema(implementation = Usuario.class))),
-            @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
-    })
-    @GetMapping("/usuarios/documento/{nroDocumento}")
-    public ResponseEntity<Usuario> obtenerPorDocumento(@PathVariable String nroDocumento) {
-        log.debug("GET /usuarios/documento/{} - Buscando usuario por documento", nroDocumento);
-        Usuario u = service.obtenerPorDocumento(nroDocumento);
-        log.debug("Usuario encontrado por documento: {} (id={})", nroDocumento, u.getId());
-        return ResponseEntity.ok(u);
-    }
-
-    @Operation(summary = "Actualizar usuario", 
-            description = "Actualiza los datos de un usuario específico. Solo se pueden actualizar: tipo documento, nombre completo, email y contraseña.")
+    @Operation(summary = "Actualizar usuario", description = "Actualiza los datos de un usuario específico.")
     @Parameter(name = "id", description = "ID del usuario a actualizar", example = "1", required = true)
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Usuario actualizado exitosamente", content = @Content(schema = @Schema(implementation = Usuario.class))),
+            @ApiResponse(responseCode = "200", description = "Usuario actualizado", content = @Content(schema = @Schema(implementation = UsuarioClientResponseDTO.class))),
             @ApiResponse(responseCode = "404", description = "Usuario no encontrado"),
-            @ApiResponse(responseCode = "400", description = "Email ya registrado por otro usuario")
     })
     @PutMapping("/usuarios/{id}")
-    public ResponseEntity<Usuario> actualizar(
+    public ResponseEntity<UsuarioClientResponseDTO> actualizar(
             @PathVariable Long id,
             @Valid @RequestBody UsuarioDTO dto) {
         log.info("PUT /usuarios/{} - Actualizando usuario: {}", id, dto.getNroDocumento());
         try {
             Usuario actualizado = service.actualizarUsuario(id, dto);
             log.info("Usuario actualizado: id={}, nroDoc={}", actualizado.getId(), actualizado.getNroDocumento());
-            return ResponseEntity.ok(actualizado);
+            return ResponseEntity.ok(mapper.toClientResponse(actualizado));
         } catch (Exception e) {
             log.error("Error al actualizar usuario {}: {}", id, e.getMessage());
             throw e;
@@ -181,48 +166,6 @@ public class LoginController {
         } catch (Exception e) {
             log.error("Error al desactivar usuario {}: {}", id, e.getMessage());
             throw e;
-        }
-    }
-
-    // 4. GESTIÓN DE PERMISOS
-    @Operation(summary = "Listar permisos de un usuario", 
-            description = "Obtiene el conjunto completo de permisos que tiene un usuario según sus roles asignados.")
-    @Parameter(name = "nroDocumento", description = "Número de documento del usuario", example = "12345678-9", required = true)
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Permisos encontrados", content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "Lista de permisos", value = "[\"USUARIO_GESTIONAR\", \"TRAMITE_CREAR\", \"TRAMITE_VER\"]"))),
-            @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
-    })
-    @GetMapping("/usuario/{nroDocumento}/permiso")
-    public ResponseEntity<Set<String>> listarPermisos(@PathVariable String nroDocumento) {
-        log.debug("GET /usuario/{}/permiso - Listando permisos", nroDocumento);
-        Set<String> permisos = service.obtenerPermisos(nroDocumento);
-        log.debug("Permisos encontrados para {}: {}", nroDocumento, permisos.size());
-        return ResponseEntity.ok(permisos);
-    }
-
-    @Operation(summary = "Validar si usuario tiene permiso específico", 
-            description = "Verifica si un usuario tiene un permiso específico.")
-    @Parameters({
-            @Parameter(name = "nroDocumento", description = "Número de documento del usuario", example = "12345678-9", required = true),
-            @Parameter(name = "permiso", description = "Código del permiso a validar", example = "USUARIO_GESTIONAR", required = true)
-    })
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Usuario TIENE el permiso", content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "Tiene permiso", value = "true"))),
-            @ApiResponse(responseCode = "403", description = "Usuario NO TIENE el permiso", content = @Content(mediaType = "application/json", examples = @ExampleObject(name = "Sin permiso", value = "false"))),
-            @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
-    })
-    @GetMapping("/usuario/{nroDocumento}/permiso/{permiso}")
-    public ResponseEntity<?> tienePermiso(
-            @PathVariable String nroDocumento,
-            @PathVariable String permiso) {
-        log.debug("GET /usuario/{}/permiso/{} - Validando permiso", nroDocumento, permiso);
-        boolean ok = service.validarPermiso(nroDocumento, permiso);
-        if (ok) {
-            log.debug("Usuario {} tiene permiso: {}", nroDocumento, permiso);
-            return ResponseEntity.ok(true);
-        } else {
-            log.warn("Usuario {} NO tiene permiso: {}", nroDocumento, permiso);
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(false);
         }
     }
 }

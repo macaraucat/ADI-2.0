@@ -3,7 +3,6 @@ package cl.aduana.ms_login.service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -88,9 +87,9 @@ public class LoginService {
         u.setFechaCreacion(LocalDateTime.now());
 
         String codigoRol = switch (dto.getOrganismo()) {
-            case "ADUANA" -> "AGENTE_ADUANA";
-            case "PDI" -> "AGENTE_PDI";
-            case "SAG" -> "AGENTE_SAG";
+            case "ADUANA" -> "FUNC_ADUANA";
+            case "PDI" -> "FUNC_PDI";
+            case "SAG" -> "FUNC_SAG";
             default -> throw new BadRequestException("Organismo no soportado");
         };
         
@@ -127,18 +126,9 @@ public class LoginService {
             });
     }
 
-    public Usuario obtenerPorDocumento(String doc) {
-        log.debug("🔍 Buscando usuario por documento: {}", doc);
-        return repo.findByNroDocumento(doc)
-            .orElseThrow(() -> {
-                log.warn("Usuario no encontrado - Documento: {}", doc);
-                return new ResourceNotFoundException("Usuario " + doc + " no encontrado");
-            });
-    }
-
     @Transactional
     public Usuario actualizarUsuario(Long id, UsuarioDTO dto) {
-        log.info("✏️  Actualizando usuario ID: {}", id);
+        log.info("Actualizando usuario ID: {}", id);
         Usuario u = obtenerPorId(id);
         
         if (dto.getEmail() != null && !dto.getEmail().equals(u.getEmail()) && repo.existsByEmail(dto.getEmail())) {
@@ -155,7 +145,7 @@ public class LoginService {
         }
         
         Usuario actualizado = repo.save(u);
-        log.info("✅ Usuario actualizado - ID: {}, NombreCompleto: {}, Email: {}", 
+        log.info("Usuario actualizado - ID: {}, NombreCompleto: {}, Email: {}", 
             actualizado.getId(), actualizado.getNombreCompleto(), actualizado.getEmail());
         
         return actualizado;
@@ -168,28 +158,6 @@ public class LoginService {
         u.setActivo(false);
         repo.save(u);
         log.info("Usuario desactivado - ID: {}, Documento: {}", id, u.getNroDocumento());
-    }
-
-    public Set<String> obtenerPermisos(String doc) {
-        log.debug("Obteniendo permisos para usuario: {}", doc);
-        Usuario u = obtenerPorDocumento(doc);
-        Set<String> permisos = u.getRoles().stream()
-            .flatMap(r -> r.getPermisos().stream())
-            .map(p -> p.getCodigo())
-            .collect(Collectors.toSet());
-        log.debug("Permisos encontrados para {}: {} permisos", doc, permisos.size());
-        return permisos;
-    }
-
-    public boolean validarPermiso(String doc, String permiso) {
-        log.debug("Validando permiso '{}' para usuario: {}", permiso, doc);
-        boolean tienePermiso = obtenerPermisos(doc).contains(permiso);
-        if (tienePermiso) {
-            log.debug("Usuario {} TIENE permiso: {}", doc, permiso);
-        } else {
-            log.warn("Usuario {} NO TIENE permiso: {}", doc, permiso);
-        }
-        return tienePermiso;
     }
 
     public LoginResponseDTO crearLoginResponse(Usuario usuario) {
