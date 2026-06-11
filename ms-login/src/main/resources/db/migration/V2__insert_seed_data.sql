@@ -6,39 +6,6 @@ INSERT INTO bd_login.rol (codigo, nombre) VALUES
 ('FUNC_SAG', 'Agente SAG'),
 ('ADMIN', 'Administrador');
 
--- Permisos
-INSERT INTO bd_login.permiso (codigo, descripcion) VALUES 
-('DECLARACION_VALIDAR', 'Permiso para validar declaraciones'),
-('VEHICULO_APROBAR', 'Permiso para aprobar vehículos'),
-('INSPECCION_REALIZAR', 'Permiso para realizar inspecciones'),
-('REPORTE_VER', 'Permiso para ver reportes'),
-('USUARIO_GESTIONAR', 'Permiso para gestionar usuarios'),
-('ALERTA_CREAR', 'Permiso para crear alertas');
-
--- Asignación permisos (ahora con los códigos correctos)
-INSERT INTO bd_login.rol_permiso (id_rol, id_permiso) VALUES
-((SELECT id FROM bd_login.rol WHERE codigo = 'PASAJERO'), (SELECT id FROM bd_login.permiso WHERE codigo = 'REPORTE_VER'));
-
-INSERT INTO bd_login.rol_permiso (id_rol, id_permiso) VALUES
-((SELECT id FROM bd_login.rol WHERE codigo = 'FUNC_ADUANA'), (SELECT id FROM bd_login.permiso WHERE codigo = 'DECLARACION_VALIDAR')),
-((SELECT id FROM bd_login.rol WHERE codigo = 'FUNC_ADUANA'), (SELECT id FROM bd_login.permiso WHERE codigo = 'VEHICULO_APROBAR')),
-((SELECT id FROM bd_login.rol WHERE codigo = 'FUNC_ADUANA'), (SELECT id FROM bd_login.permiso WHERE codigo = 'INSPECCION_REALIZAR'));
-
-INSERT INTO bd_login.rol_permiso (id_rol, id_permiso) VALUES
-((SELECT id FROM bd_login.rol WHERE codigo = 'FUNC_PDI'), (SELECT id FROM bd_login.permiso WHERE codigo = 'INSPECCION_REALIZAR')),
-((SELECT id FROM bd_login.rol WHERE codigo = 'FUNC_PDI'), (SELECT id FROM bd_login.permiso WHERE codigo = 'ALERTA_CREAR'));
-
-INSERT INTO bd_login.rol_permiso (id_rol, id_permiso) VALUES
-((SELECT id FROM bd_login.rol WHERE codigo = 'FUNC_SAG'), (SELECT id FROM bd_login.permiso WHERE codigo = 'INSPECCION_REALIZAR'));
-
-INSERT INTO bd_login.rol_permiso (id_rol, id_permiso) VALUES
-((SELECT id FROM bd_login.rol WHERE codigo = 'ADMIN'), (SELECT id FROM bd_login.permiso WHERE codigo = 'DECLARACION_VALIDAR')),
-((SELECT id FROM bd_login.rol WHERE codigo = 'ADMIN'), (SELECT id FROM bd_login.permiso WHERE codigo = 'VEHICULO_APROBAR')),
-((SELECT id FROM bd_login.rol WHERE codigo = 'ADMIN'), (SELECT id FROM bd_login.permiso WHERE codigo = 'INSPECCION_REALIZAR')),
-((SELECT id FROM bd_login.rol WHERE codigo = 'ADMIN'), (SELECT id FROM bd_login.permiso WHERE codigo = 'REPORTE_VER')),
-((SELECT id FROM bd_login.rol WHERE codigo = 'ADMIN'), (SELECT id FROM bd_login.permiso WHERE codigo = 'USUARIO_GESTIONAR')),
-((SELECT id FROM bd_login.rol WHERE codigo = 'ADMIN'), (SELECT id FROM bd_login.permiso WHERE codigo = 'ALERTA_CREAR'));
-
 -- Usuarios de prueba
 INSERT INTO bd_login.usuario (tipo_documento, nro_documento, nombre_completo, email, password, organismo) VALUES
 ('RUT', '8888888-1', 'Juan Pérez García', 'juan.perez@example.com', 'password123', 'PASAJERO'),

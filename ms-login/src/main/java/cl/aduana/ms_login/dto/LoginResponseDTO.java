@@ -33,7 +33,7 @@ public class LoginResponseDTO {
     
     @Schema(
         description = "Conjunto de roles asignados al usuario",
-        example = "[\"AGENTE_ADUANA\", \"USUARIO_GESTIONAR\"]"
+        example = "[\"FUNC_ADUANA\"]"
     )
     private Set<String> roles;
 }

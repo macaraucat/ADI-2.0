@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: ms-login
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+info:
+  app:
+    name: ms-login
+    version: 0.0.1
