@@ -21,7 +21,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@Tag(name = "Reportes", description = "API para generación, consulta y gestión de reportes del sistema de aduana.")
+@Tag(name = "Reportes", description = "API de gestión de reportes del sistema de aduana.")
 @RestController
 @RequestMapping("/api/v1/reportes")
 @RequiredArgsConstructor
@@ -31,18 +31,12 @@ public class ReporteController {
     private final ReporteService service;
 
     // 1. LISTAR REPORTES
-    @Operation(summary = "Listar todos los reportes", description = "Obtiene el listado completo de reportes generados en el sistema. "
-            +
-            "Incluye todos los reportes sin filtros, independientemente de su antigüedad.")
+    @Operation(summary = "Listar todos los reportes", description = "Obtiene el listado completo de reportes generados en el sistema.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Listado exitoso", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Reporte.class), 
-            examples = @ExampleObject(name = "Lista de reportes", value = "["
-                    +
-                    "{\"id\": 1, \"tipo\": \"USUARIOS\", \"fechaGeneracion\": \"2024-01-15T14:30:00\", " +
-                    "\"totalRegistros\": 150, \"generadoPor\": \"juan.garcia@aduana.cl\", \"formato\": \"JSON\"}," +
-                    "{\"id\": 2, \"tipo\": \"VEHICULOS\", \"fechaGeneracion\": \"2024-01-15T15:45:00\", " +
-                    "\"totalRegistros\": 320, \"generadoPor\": \"maria.lopez@aduana.cl\", \"formato\": \"JSON\"}" +
-                    "]")))
+            examples = @ExampleObject(name = "Lista de reportes", 
+            value = "[{\"id\": 1, \"tipo\": \"USUARIOS\", \"fechaGeneracion\": \"2024-01-15T14:30:00\", " +
+                    "\"totalRegistros\": 150, \"generadoPor\": \"juan.garcia@aduana.cl\", \"formato\": \"JSON\"}]")))
     })
     @GetMapping("")
     public ResponseEntity<List<Reporte>> listar() {
@@ -57,18 +51,18 @@ public class ReporteController {
     @Parameter(name = "id", description = "ID único del reporte a consultar", example = "1", required = true)
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Reporte encontrado", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Reporte.class), 
-            examples = @ExampleObject(name = "Reporte encontrado", value = "{\"id\": 1, \"tipo\": \"USUARIOS\", " +
+            examples = @ExampleObject(name = "Reporte encontrado", 
+            value = "{\"id\": 1, \"tipo\": \"USUARIOS\", " +
                     "\"fechaGeneracion\": \"2024-01-15T14:30:00\", " +
                     "\"totalRegistros\": 150, \"generadoPor\": \"juan.garcia@aduana.cl\", " +
                     "\"formato\": \"JSON\"}"))),
             @ApiResponse(responseCode = "404", description = "Reporte no encontrado", content = @Content(mediaType = "application/json", 
-            examples = @ExampleObject(name = "Error 404", value = "{\"error\": \"Recurso no encontrado\", " +
-                    "\"message\": \"Reporte id 999 no encontrado\", " +
-                    "\"timestamp\": \"2024-01-15T14:30:00\"}")))
+            examples = @ExampleObject(name = "Error 404", 
+            value = "{\"error\": \"Recurso no encontrado\", \"message\": \"Reporte id 999 no encontrado\", \"timestamp\": \"2024-01-15T14:30:00\"}")))
     })
     @GetMapping("/{id}")
     public ResponseEntity<Reporte> obtener(@PathVariable Long id) {
-        log.info("🔍 GET /api/v1/reportes/{} - Buscando reporte por ID", id);
+        log.info("GET /api/v1/reportes/{} - Buscando reporte por ID", id);
         try {
             Reporte reporte = service.obtener(id);
             log.info("Reporte encontrado: tipo={}, generadoPor={}, registros={}",
@@ -84,14 +78,14 @@ public class ReporteController {
     @Operation(summary = "Generar nuevo reporte", description = "Crea y genera un nuevo reporte según el tipo especificado.")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Reporte generado exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Reporte.class), 
-                examples = @ExampleObject(name = "Reporte generado", value = "{\"id\": 3, \"tipo\": \"USUARIOS\", " +
+                examples = @ExampleObject(name = "Reporte generado", 
+                value = "{\"id\": 3, \"tipo\": \"USUARIOS\", " +
                     "\"fechaGeneracion\": \"2024-01-15T16:00:00\", " +
                     "\"totalRegistros\": 150, \"generadoPor\": \"carlos.mendez@aduana.cl\", " +
                     "\"formato\": \"JSON\"}"))),
             @ApiResponse(responseCode = "400", description = "Parámetros inválidos o faltantes", content = @Content(mediaType = "application/json", 
-                examples = @ExampleObject(name = "Error 400", value = "{\"error\": \"Verifique los datos enviados\", " +
-                    "\"message\": \"Tipo obligatorio\", " +
-                    "\"timestamp\": \"2024-01-15T16:00:00\"}"))),
+                examples = @ExampleObject(name = "Error 400", 
+                value = "{\"error\": \"Verifique los datos enviados\", \"message\": \"Tipo obligatorio\", \"timestamp\": \"2024-01-15T16:00:00\"}"))),
             @ApiResponse(responseCode = "500", description = "Error al consultar los datos de los microservicios")
     })
     @PostMapping("/generar")

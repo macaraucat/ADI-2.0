@@ -14,7 +14,11 @@ spring:
         - id: ms-vehicle
           uri: lb://MS-VEHICLE
           predicates:
-            - Path=/api/v1/vehiculos/**,/api/v1/admisiones/**,/api/v1/conductores/**  
+            - Path=/api/v1/vehiculos/**,/api/v1/admisiones/**,/api/v1/conductores/**
+        - id: ms-report
+          uri: lb://MS-REPORT
+          predicates:
+            - Path=/api/v1/reportes/**  
 eureka:
   client:
     service-url:

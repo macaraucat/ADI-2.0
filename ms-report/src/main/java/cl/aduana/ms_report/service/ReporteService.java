@@ -29,9 +29,8 @@ public class ReporteService {
     }
 
     public Reporte obtener(Long id) {
-        log.debug("🔍 Buscando reporte por ID: {}", id);
-        return repo.findById(id)
-            .orElseThrow(() -> {
+        log.debug("Buscando reporte por ID: {}", id);
+        return repo.findById(id).orElseThrow(() -> {
                 log.warn("Reporte no encontrado - ID: {}", id);
                 return new ResourceNotFoundException("Reporte id " + id + " no encontrado");
             });
