@@ -26,6 +26,6 @@ public class ReportControllerTest {
     @Test
     void listar() throws Exception {
         when(service.listar()).thenReturn(List.of());
-        mockMvc.perform(get("/api/v1/reportes/usuarios")).andExpect(status().isOk());
+        mockMvc.perform(get("/api/v1/reportes")).andExpect(status().isOk());
     }
 }
