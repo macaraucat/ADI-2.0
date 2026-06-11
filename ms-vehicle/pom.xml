@@ -11,7 +11,7 @@
 	<groupId>cl.aduana</groupId>
 	<artifactId>ms-vehicle</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>ms-login</name>
+	<name>ms-vehicle</name>
 	<description>Microservicio de vehículos - ADI</description>
 	<properties>
 		<java.version>17</java.version>
