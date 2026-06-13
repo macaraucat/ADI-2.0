@@ -18,7 +18,15 @@ spring:
         - id: ms-report
           uri: lb://MS-REPORT
           predicates:
-            - Path=/api/v1/reportes/**  
+            - Path=/api/v1/reportes/**
+        - id: ms-travel
+          uri: lb://MS-TRAVEL
+          predicates:
+            - Path=/api/v1/tramites/**
+        - id: ms-notification
+          uri: lb://MS-NOTIFICATION
+          predicates:
+            - Path=/api/v1/notificaciones/**
 eureka:
   client:
     service-url:
