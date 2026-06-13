@@ -1,0 +1,81 @@
+spring:
+  application:
+    name: travel-service
+  
+  config:
+    import: "optional:classpath:application-custom.properties"
+  
+  output:
+    ansi:
+      enabled: ALWAYS
+
+  datasource:
+    username: "${DB_USERNAME}"
+    password: "${DB_PASSWORD}"
+    url: "${DB_URL}"
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 2
+      minimum-idle: 1
+      idle-timeout: 30000
+      max-lifetime: 180000
+
+  sql:
+    init:
+      mode: never
+      data-locations: ""
+
+  jpa:
+    defer-datasource-initialization: false
+    show-sql: true
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        "[format_sql]": true
+        "[default_schema]": bd_tramites
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        
+  flyway:
+    enabled: true
+    default-schema: bd_tramites
+    schemas: bd_tramites
+    locations: classpath:db/migration
+    validate-on-migrate: false
+
+server:
+  port: 8083
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+info:
+  app:
+    name: travel-service
+    version: 0.0.1
+    modo-emergencia: ${MODO_EMERGENCIA_MOCK:false}
+
+logging:
+  file:
+    name: logs/ms-travel.log
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %logger{36} - %msg%n"
+  level:
+    root: INFO
+    cl.adi.ms_travel: DEBUG
+    cl.adi.common: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.security: DEBUG
+    org.hibernate: INFO
+    org.hibernate.SQL: INFO

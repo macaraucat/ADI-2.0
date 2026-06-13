@@ -4,11 +4,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Value; // <-- IMPORTANTE
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import cl.aduana.common.exception.BadRequestException;
-import cl.aduana.common.exception.ResourceNotFoundException;
 import cl.aduana.common.client.NotificacionClient;
 import cl.aduana.common.client.RiskClient;
 import cl.aduana.common.client.UsuarioClient;
@@ -19,6 +18,8 @@ import cl.aduana.common.dto.response.EvaluacionRiesgoResponseDTO;
 import cl.aduana.common.dto.response.NotificacionResponseDTO;
 import cl.aduana.common.dto.response.UsuarioClientResponseDTO;
 import cl.aduana.common.dto.response.VehiculoClientResponseDTO;
+import cl.aduana.common.exception.BadRequestException;
+import cl.aduana.common.exception.ResourceNotFoundException;
 import cl.aduana.ms_travel.dto.estado.EstadoTramiteMapper;
 import cl.aduana.ms_travel.dto.estado.EstadoTramiteResponseDTO;
 import cl.aduana.ms_travel.dto.pasajero.PasajeroMapper;
@@ -34,7 +35,6 @@ import cl.aduana.ms_travel.model.Pasajero;
 import cl.aduana.ms_travel.model.TipoEstado;
 import cl.aduana.ms_travel.model.Tramite;
 import cl.aduana.ms_travel.repository.TramiteRepository;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -52,6 +52,10 @@ public class TramiteService {
     private final UsuarioClient usuarioClient;
     private final VehiculoClient vehiculoClient;
     private final NotificacionClient notificacionClient;
+
+    // Inyectamos la variable de emergencia
+    @Value("${app.modo-emergencia:false}")
+    private boolean modoEmergencia;
 
     public Tramite findTramiteOrThrow(Long idTramite) {
         log.info("iniciando busqueda para id: {}", idTramite);
@@ -102,8 +106,14 @@ public class TramiteService {
         if (request.getIdUsuario() == null || request.getIdVehiculo() == null) {
             throw new BadRequestException("idUsuario e idVehiculo son obligatorios");
         }        
-        usuarioClient.obtenerUsuarioPorId(request.getIdUsuario());        
-        vehiculoClient.obtenerVehiculoPorId(request.getIdVehiculo());
+        
+        // 🚨 VÍA DE EMERGENCIA 1: SIMULACIÓN DE CLIENTES (USUARIO Y VEHÍCULO)
+        if (modoEmergencia) {
+            log.warn("[MODO EMERGENCIA] Saltando llamadas reales a UsuarioClient y VehiculoClient");
+        } else {
+            usuarioClient.obtenerUsuarioPorId(request.getIdUsuario());        
+            vehiculoClient.obtenerVehiculoPorId(request.getIdVehiculo());
+        }
 
         Tramite nuevo = tramiteMapper.toEntity(request);
         nuevo.setEstadoActual(TipoEstado.INGRESADO);
@@ -122,16 +132,22 @@ public class TramiteService {
         Tramite guardado = tramiteRepository.save(nuevo);
         estadoTramiteService.agregarEstado(guardado, TipoEstado.INGRESADO, "Tramite creado con exito");
 
-        NotificacionRequestDTO aviso = NotificacionRequestDTO.builder()
-                .idUsuario(guardado.getIdUsuario())
-                .tipoNotificacion("CorreoElectronico")
-                .detalle("Su tramite ha sido creado con exito!")
-                .build();
-        Optional<NotificacionResponseDTO> respuesta = notificacionClient.enviarMensaje(aviso);
-        log.info("Notificando al usuario... {}", respuesta);
+        // 🚨 VÍA DE EMERGENCIA 2: SIMULACIÓN DE NOTIFICACIÓN
+        if (modoEmergencia) {
+            log.warn("[MODO EMERGENCIA] Simulando envío de notificación por correo exitosa");
+        } else {
+            NotificacionRequestDTO aviso = NotificacionRequestDTO.builder()
+                    .idUsuario(guardado.getIdUsuario())
+                    .tipoNotificacion("CorreoElectronico")
+                    .detalle("Su tramite ha sido creado con exito!")
+                    .build();
+            Optional<NotificacionResponseDTO> respuesta = notificacionClient.enviarMensaje(aviso);
+            log.info("Notificando al usuario... {}", respuesta);
+        }
 
         log.info("Tramite creado, preparando evaluacion de riesgo. Tramite: {}", 
             tramiteMapper.toResumenResponse(guardado));
+        
         this.evaluarRiesgoTramite(guardado.getIdTramite());
         return tramiteMapper.toResponse(guardado);
     }
@@ -143,43 +159,67 @@ public class TramiteService {
                 .orElseThrow(() -> new ResourceNotFoundException("Tramite no encontrado"));
         estadoTramiteService.validarSiEsEvaluable(tramite);
 
-        UsuarioClientResponseDTO usuario = usuarioClient.obtenerUsuarioPorId(tramite.getIdUsuario());
-        if (usuario == null) {
-            throw new ResourceNotFoundException("No se pudo obtener usuario");
-        }
-        VehiculoClientResponseDTO vehiculo = vehiculoClient.obtenerVehiculoPorId(tramite.getIdVehiculo());
-        if (vehiculo == null) {
-            throw new ResourceNotFoundException("No se pudo obtener vehículo");
+        String nroDocumentoSujeto = "MOCK-DOC-123";
+        String patente = "MOCK-PAT-999";
+
+        // 🚨 VÍA DE EMERGENCIA 3: SIMULACIÓN DE CLIENTES EN RIESGO
+        if (modoEmergencia) {
+            log.warn("[MODO EMERGENCIA] Creando datos simulados para análisis de riesgo");
+        } else {
+            UsuarioClientResponseDTO usuario = usuarioClient.obtenerUsuarioPorId(tramite.getIdUsuario());
+            if (usuario == null) {
+                throw new ResourceNotFoundException("No se pudo obtener usuario");
+            }
+            VehiculoClientResponseDTO vehiculo = vehiculoClient.obtenerVehiculoPorId(tramite.getIdVehiculo());
+            if (vehiculo == null) {
+                throw new ResourceNotFoundException("No se pudo obtener vehículo");
+            }
+            nroDocumentoSujeto = usuario.getNroDocumento();
+            patente = vehiculo.getPatente();
         }
 
-        EvaluacionRiesgoRequestDTO evaluacionRiesgo = EvaluacionRiesgoRequestDTO.builder()
-            .nroDocumentoSujeto(usuario.getNroDocumento())
-            .patente(vehiculo.getPatente())
-            .nroDocumentoAcompanantes(tramite.getPasajeros().stream()
-                    .map(Pasajero::getNroDocumento).toList())
-            .idTramite(idTramite)
-            .build();
+        EvaluacionRiesgoResponseDTO resultadoRiesgo;
 
-        EvaluacionRiesgoResponseDTO resultadoRiesgo = riskClient.evaluarRiesgo(evaluacionRiesgo)
-                .orElseThrow(() -> new IllegalStateException("Error al enviar solicitud de riesgo"));
+        // 🚨 VÍA DE EMERGENCIA 4: SIMULACIÓN DE RESPUESTA DE RIESGO
+        if (modoEmergencia) {
+            log.warn("[MODO EMERGENCIA] Simulando análisis del RiskClient -> Retornando riesgo BAJO predefinido");
+
+            // Al usar @Data, el constructor vacío está disponible
+            resultadoRiesgo = new EvaluacionRiesgoResponseDTO();
+
+            // Seteamos únicamente los campos reales que tiene el DTO
+            resultadoRiesgo.setNivelRiesgo("BAJO"); // <-- Puedes cambiarlo a "MEDIO" o "ALTO" para probar
+            resultadoRiesgo.setDetalle("Simulación de riesgo exitosa en modo de emergencia");
+        } else {
+            EvaluacionRiesgoRequestDTO evaluacionRiesgo = EvaluacionRiesgoRequestDTO.builder()
+                    .nroDocumentoSujeto(nroDocumentoSujeto)
+                    .patente(patente)
+                    .nroDocumentoAcompanantes(tramite.getPasajeros().stream()
+                            .map(Pasajero::getNroDocumento).toList())
+                    .idTramite(idTramite)
+                    .build();
+
+            resultadoRiesgo = riskClient.evaluarRiesgo(evaluacionRiesgo)
+                    .orElseThrow(() -> new IllegalStateException("Error al enviar solicitud de riesgo"));
+        }
 
         log.info("Evaluación completada. Nivel: {}", resultadoRiesgo.getNivelRiesgo());
 
         switch (resultadoRiesgo.getNivelRiesgo()) {
             case "BAJO" -> {
                 tramite.setEstadoActual(TipoEstado.APROBADO_AUTOMATICO);
-                estadoTramiteService.agregarEstado(tramite, TipoEstado.APROBADO_AUTOMATICO, 
-                    "Tramite aprobado automaticamente");
+                estadoTramiteService.agregarEstado(tramite, TipoEstado.APROBADO_AUTOMATICO,
+                        "Tramite aprobado automaticamente");
             }
             case "MEDIO" -> {
                 tramite.setEstadoActual(TipoEstado.REQUIERE_INSPECCION);
-                estadoTramiteService.agregarEstado(tramite, TipoEstado.REQUIERE_INSPECCION, 
-                    "Tramite requiere inspección");
+                estadoTramiteService.agregarEstado(tramite, TipoEstado.REQUIERE_INSPECCION,
+                        "Tramite requiere inspección");
             }
             case "ALTO" -> {
                 tramite.setEstadoActual(TipoEstado.RECHAZADO_AUTOMATICO);
-                estadoTramiteService.agregarEstado(tramite, TipoEstado.RECHAZADO_AUTOMATICO, 
-                    "Tramite rechazado automaticamente");
+                estadoTramiteService.agregarEstado(tramite, TipoEstado.RECHAZADO_AUTOMATICO,
+                        "Tramite rechazado automaticamente");
             }
         }
         return tramiteMapper.toResponse(tramite);
@@ -197,6 +237,7 @@ public class TramiteService {
         tramiteRepository.save(tramite);
         return estadoTramiteMapper.toResponse(nuevoEstado);
     }
+
     @Transactional(readOnly = true)
     public List<TramiteResumenResponseDTO> buscarPorParametros(Long idUsuario, Long idVehiculo) {
         log.info("Iniciando búsqueda paramétrica en BD...");
@@ -227,10 +268,8 @@ public class TramiteService {
         Tramite tramite = this.findTramiteOrThrow(idTramite); 
         estadoTramiteService.validarSiEsActualizable(tramite);
         
-        // crear pasajero
         Pasajero nuevoPasajero = pasajeroMapper.toEntity(pasajeroRequest);
         nuevoPasajero.setTramite(tramite);    
-        //jpa, mediante el esquema definido y las anotacion permite aplicando POO, gurdar el pasajero correctamente en la db
         tramite.getPasajeros().add(nuevoPasajero);
         return pasajeroMapper.toResponse(nuevoPasajero);
     }
@@ -260,7 +299,7 @@ public class TramiteService {
                 .filter(p -> p.getIdPasajero().equals(idPasajero))
                 .findFirst()
                 .orElseThrow(() -> new ResourceNotFoundException("Pasajero no encontrado en este trámite"));
-        //mediante la relacion con la anotacion y jpa se elimina correctamente de la db
+        
         tramite.getPasajeros().remove(pasajero);
         return "Pasajero Eliminado de forma exitosa";
     }
@@ -272,4 +311,4 @@ public class TramiteService {
                 .map(pasajeroMapper::toResponse)
                 .toList();
     }    
-}    
+}
