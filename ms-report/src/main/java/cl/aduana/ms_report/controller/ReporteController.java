@@ -12,7 +12,6 @@ import cl.aduana.ms_report.service.ReporteService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -32,12 +31,7 @@ public class ReporteController {
 
     // 1. LISTAR REPORTES
     @Operation(summary = "Listar todos los reportes", description = "Obtiene el listado completo de reportes generados en el sistema.")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Listado exitoso", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Reporte.class), 
-            examples = @ExampleObject(name = "Lista de reportes", 
-            value = "[{\"id\": 1, \"tipo\": \"USUARIOS\", \"fechaGeneracion\": \"2024-01-15T14:30:00\", " +
-                    "\"totalRegistros\": 150, \"generadoPor\": \"juan.garcia@aduana.cl\", \"formato\": \"JSON\"}]")))
-    })
+    @ApiResponse(responseCode = "200", description = "Listado exitoso", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Reporte.class)))
     @GetMapping("")
     public ResponseEntity<List<Reporte>> listar() {
         log.info("GET /api/v1/reportes - Solicitud de listado de reportes");
@@ -50,15 +44,8 @@ public class ReporteController {
     @Operation(summary = "Obtener reporte por ID", description = "Busca un reporte específico utilizando su ID interno.")
     @Parameter(name = "id", description = "ID único del reporte a consultar", example = "1", required = true)
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Reporte encontrado", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Reporte.class), 
-            examples = @ExampleObject(name = "Reporte encontrado", 
-            value = "{\"id\": 1, \"tipo\": \"USUARIOS\", " +
-                    "\"fechaGeneracion\": \"2024-01-15T14:30:00\", " +
-                    "\"totalRegistros\": 150, \"generadoPor\": \"juan.garcia@aduana.cl\", " +
-                    "\"formato\": \"JSON\"}"))),
-            @ApiResponse(responseCode = "404", description = "Reporte no encontrado", content = @Content(mediaType = "application/json", 
-            examples = @ExampleObject(name = "Error 404", 
-            value = "{\"error\": \"Recurso no encontrado\", \"message\": \"Reporte id 999 no encontrado\", \"timestamp\": \"2024-01-15T14:30:00\"}")))
+            @ApiResponse(responseCode = "200", description = "Reporte encontrado", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Reporte.class))),
+            @ApiResponse(responseCode = "404", description = "Reporte no encontrado", content = @Content(mediaType = "application/json"))
     })
     @GetMapping("/{id}")
     public ResponseEntity<Reporte> obtener(@PathVariable Long id) {
@@ -77,15 +64,8 @@ public class ReporteController {
     // 3. GENERAR NUEVO REPORTE
     @Operation(summary = "Generar nuevo reporte", description = "Crea y genera un nuevo reporte según el tipo especificado.")
     @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "Reporte generado exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Reporte.class), 
-                examples = @ExampleObject(name = "Reporte generado", 
-                value = "{\"id\": 3, \"tipo\": \"USUARIOS\", " +
-                    "\"fechaGeneracion\": \"2024-01-15T16:00:00\", " +
-                    "\"totalRegistros\": 150, \"generadoPor\": \"carlos.mendez@aduana.cl\", " +
-                    "\"formato\": \"JSON\"}"))),
-            @ApiResponse(responseCode = "400", description = "Parámetros inválidos o faltantes", content = @Content(mediaType = "application/json", 
-                examples = @ExampleObject(name = "Error 400", 
-                value = "{\"error\": \"Verifique los datos enviados\", \"message\": \"Tipo obligatorio\", \"timestamp\": \"2024-01-15T16:00:00\"}"))),
+            @ApiResponse(responseCode = "201", description = "Reporte generado exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Reporte.class))),
+            @ApiResponse(responseCode = "400", description = "Parámetros inválidos o faltantes"),
             @ApiResponse(responseCode = "500", description = "Error al consultar los datos de los microservicios")
     })
     @PostMapping("/generar")
@@ -124,8 +104,7 @@ public class ReporteController {
     @Parameter(name = "id", description = "ID único del reporte a eliminar", example = "1", required = true)
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Reporte eliminado correctamente"),
-            @ApiResponse(responseCode = "404", description = "Reporte no encontrado", content = @Content(mediaType = "application/json", 
-                examples = @ExampleObject(name = "Error 404", value = "{\"error\": \"Recurso no encontrado\", \"message\": \"Reporte id 999 no encontrado\", \"timestamp\": \"2024-01-15T16:00:00\"}")))
+            @ApiResponse(responseCode = "404", description = "Reporte no encontrado")
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {

@@ -57,7 +57,7 @@ public class LoginController {
     @Operation(summary = "Registrar nuevo usuario estándar", 
             description = "Crea un nuevo usuario con rol de PASAJERO.")
     @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "Usuario creado exitosamente", content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "201", description = "Usuario creado exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UsuarioDTO.class))),
             @ApiResponse(responseCode = "400", description = "Email o documento ya registrado"),
             @ApiResponse(responseCode = "422", description = "Datos de validación inválidos")
     })
@@ -100,7 +100,7 @@ public class LoginController {
     
     // GESTIÓN DE USUARIOS
     @Operation(summary = "Listar todos los usuarios", description = "Obtiene la lista completa de usuarios.")
-    @ApiResponse(responseCode = "200", description = "Listado exitoso", content = @Content(schema = @Schema(implementation = UsuarioClientResponseDTO.class)))
+    @ApiResponse(responseCode = "200", description = "Listado exitoso", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UsuarioClientResponseDTO.class)))
     @GetMapping("/usuarios")
     public ResponseEntity<List<UsuarioClientResponseDTO>> listar() {
         log.debug("GET /usuarios - Listando todos los usuarios");
@@ -117,7 +117,7 @@ public class LoginController {
     @Operation(summary = "Obtener usuario por ID", description = "Busca un usuario específico usando su ID.")
     @Parameter(name = "id", description = "ID interno del usuario", example = "1", required = true)
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Usuario encontrado", content = @Content(schema = @Schema(implementation = UsuarioClientResponseDTO.class))),
+            @ApiResponse(responseCode = "200", description = "Usuario encontrado", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UsuarioClientResponseDTO.class))),
             @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
     })
     @GetMapping("/usuarios/{id}")
@@ -131,7 +131,7 @@ public class LoginController {
     @Operation(summary = "Actualizar usuario", description = "Actualiza los datos de un usuario específico.")
     @Parameter(name = "id", description = "ID del usuario a actualizar", example = "1", required = true)
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Usuario actualizado", content = @Content(schema = @Schema(implementation = UsuarioClientResponseDTO.class))),
+            @ApiResponse(responseCode = "200", description = "Usuario actualizado", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UsuarioClientResponseDTO.class))),
             @ApiResponse(responseCode = "404", description = "Usuario no encontrado"),
     })
     @PutMapping("/usuarios/{id}")
@@ -149,8 +149,7 @@ public class LoginController {
         }
     }
 
-    @Operation(summary = "Desactivar usuario", 
-            description = "Desactiva un usuario realizando un soft delete. El usuario no podrá autenticarse pero sus datos se mantienen en la base de datos.")
+    @Operation(summary = "Desactivar usuario", description = "Desactiva un usuario realizando un soft delete.")
     @Parameter(name = "id", description = "ID del usuario a desactivar", example = "1", required = true)
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Usuario desactivado correctamente"),
