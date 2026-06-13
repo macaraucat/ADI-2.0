@@ -17,6 +17,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import static org.mockito.ArgumentMatchers.any;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -41,6 +42,7 @@ import cl.aduana.ms_travel.dto.pasajero.PasajeroRequestDTO;
 import cl.aduana.ms_travel.dto.pasajero.PasajeroResponseDTO;
 import cl.aduana.ms_travel.dto.tramite.TramiteMapper;
 import cl.aduana.ms_travel.dto.tramite.TramiteRequestDTO;
+import cl.aduana.ms_travel.dto.tramite.TramiteRequestUpdateDTO;
 import cl.aduana.ms_travel.dto.tramite.TramiteResponseDTO;
 import cl.aduana.ms_travel.dto.tramite.TramiteResumenResponseDTO;
 import cl.aduana.ms_travel.model.EstadoTramite;
@@ -197,8 +199,8 @@ class TramiteServiceTest {
         uRes.setNroDocumento("123");
         VehiculoClientResponseDTO vRes = new VehiculoClientResponseDTO();
         vRes.setPatente("ABCD12");
-        when(usuarioClient.obtenerUsuarioPorId(idTramiteValido)).thenReturn(uRes);
-        when(vehiculoClient.obtenerVehiculoPorId(idTramiteValido)).thenReturn(vRes);
+        when(usuarioClient.obtenerUsuarioPorId(100L)).thenReturn(uRes);
+        when(vehiculoClient.obtenerVehiculoPorId(200L)).thenReturn(vRes);
 
         EvaluacionRiesgoResponseDTO riskRes = new EvaluacionRiesgoResponseDTO();
         riskRes.setNivelRiesgo("BAJO");
@@ -301,5 +303,90 @@ class TramiteServiceTest {
     void quitarPasajero_NoEncontrado() {
         when(tramiteRepository.findById(idTramiteValido)).thenReturn(Optional.of(tramiteMock));
         assertThrows(ResourceNotFoundException.class, () -> tramiteService.quitarPasajero(idTramiteValido, 999L));
+    }
+
+    @Test
+    @DisplayName("Debe actualizar un trámite y devolver resumen")
+    void actualizarTramite_Exito() {
+        TramiteRequestUpdateDTO updateRequest = new TramiteRequestUpdateDTO();
+        Tramite tramiteActualizado = new Tramite();
+        tramiteActualizado.setIdTramite(idTramiteValido);
+        tramiteActualizado.setIdUsuario(tramiteMock.getIdUsuario());
+        tramiteActualizado.setIdVehiculo(tramiteMock.getIdVehiculo());
+        tramiteActualizado.setPasajeros(new ArrayList<>());
+        tramiteActualizado.setEstadoActual(TipoEstado.INGRESADO);
+
+        when(tramiteRepository.findById(idTramiteValido)).thenReturn(Optional.of(tramiteMock));
+        when(tramiteMapper.updateEntityFromRequest(tramiteMock, updateRequest)).thenReturn(tramiteActualizado);
+        when(tramiteRepository.save(tramiteActualizado)).thenReturn(tramiteActualizado);
+        when(tramiteMapper.toResumenResponse(tramiteActualizado)).thenReturn(new TramiteResumenResponseDTO());
+
+        TramiteResumenResponseDTO resultado = tramiteService.actualizarTramite(idTramiteValido, updateRequest);
+
+        assertNotNull(resultado);
+        verify(estadoTramiteService).validarSiEsActualizable(tramiteMock);
+    }
+
+    @Test
+    @DisplayName("Debe buscar trámites solo por idUsuario")
+    void buscarPorParametros_IdUsuario() {
+        when(tramiteRepository.findByIdUsuario(100L)).thenReturn(List.of(tramiteMock));
+        List<TramiteResumenResponseDTO> res = tramiteService.buscarPorParametros(100L, null);
+        assertNotNull(res);
+    }
+
+    @Test
+    @DisplayName("Debe buscar trámites solo por idVehiculo")
+    void buscarPorParametros_IdVehiculo() {
+        when(tramiteRepository.findByIdVehiculo(200L)).thenReturn(List.of(tramiteMock));
+        List<TramiteResumenResponseDTO> res = tramiteService.buscarPorParametros(null, 200L);
+        assertNotNull(res);
+    }
+
+    @Test
+    @DisplayName("Debe evaluar riesgo MEDIO y pasar a REQUIERE_INSPECCION")
+    void evaluarRiesgo_Medio() {
+        when(tramiteRepository.findById(idTramiteValido)).thenReturn(Optional.of(tramiteMock));
+        UsuarioClientResponseDTO uRes = new UsuarioClientResponseDTO();
+        uRes.setNroDocumento("123");
+        VehiculoClientResponseDTO vRes = new VehiculoClientResponseDTO();
+        vRes.setPatente("ABCD12");
+        when(usuarioClient.obtenerUsuarioPorId(any())).thenReturn(uRes);
+        when(vehiculoClient.obtenerVehiculoPorId(any())).thenReturn(vRes);
+        EvaluacionRiesgoResponseDTO riskRes = new EvaluacionRiesgoResponseDTO();
+        riskRes.setNivelRiesgo("MEDIO");
+        when(riskClient.evaluarRiesgo(any(EvaluacionRiesgoRequestDTO.class))).thenReturn(Optional.of(riskRes));
+        when(tramiteMapper.toResponse(tramiteMock)).thenReturn(new TramiteResponseDTO());
+
+        tramiteService.evaluarRiesgoTramite(idTramiteValido);
+        assertEquals(TipoEstado.REQUIERE_INSPECCION, tramiteMock.getEstadoActual());
+    }
+
+    @Test
+    @DisplayName("Debe lanzar ResourceNotFoundException cuando no se encuentra el usuario en evaluación de riesgo")
+    void evaluarRiesgo_NoUsuario() {
+        when(tramiteRepository.findById(idTramiteValido)).thenReturn(Optional.of(tramiteMock));
+        when(usuarioClient.obtenerUsuarioPorId(any())).thenReturn(null);
+        assertThrows(ResourceNotFoundException.class, () -> tramiteService.evaluarRiesgoTramite(idTramiteValido));
+    }
+
+    @Test
+    @DisplayName("Debe aprobar un trámite con éxito")
+    void aprobarTramite_Exito() {
+        when(tramiteRepository.findById(idTramiteValido)).thenReturn(Optional.of(tramiteMock));
+        EstadoTramite estado = new EstadoTramite();
+        doNothing().when(estadoTramiteService).validarSiEsAprobable(tramiteMock);
+        when(estadoTramiteService.agregarEstado(tramiteMock, TipoEstado.APROBADO, "Tramite aprobado por funcionario de aduana")).thenReturn(estado);
+        when(estadoTramiteMapper.toResponse(estado)).thenReturn(new EstadoTramiteResponseDTO());
+
+        EstadoTramiteResponseDTO response = tramiteService.aprobarTramite(idTramiteValido);
+        assertNotNull(response);
+        verify(tramiteRepository).save(tramiteMock);
+    }
+
+    @Test
+    @DisplayName("Debe lanzar UnsupportedOperationException para actualizaEstadoGlobal no implementado")
+    void actualizaEstadoGlobal_NoImplementado() {
+        assertThrows(UnsupportedOperationException.class, () -> tramiteService.actualizaEstadoGlobal(idTramiteValido));
     }
 }
