@@ -15,6 +15,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import static org.mockito.Mockito.doNothing;
@@ -147,6 +148,18 @@ class TramiteServiceTest {
         verify(tramiteRepository, times(1)).findAllByEstadoActualIn(estados);
     }
 
+    @Test
+    @DisplayName("Debe listar todos los trámites si el filtro de estados es nulo")
+    void listarTodos_NullEstados() {
+        when(tramiteRepository.findAll()).thenReturn(List.of(tramiteMock));
+        when(tramiteMapper.toResumenResponse(any(Tramite.class))).thenReturn(new TramiteResumenResponseDTO());
+
+        List<TramiteResumenResponseDTO> resultado = tramiteService.listarTodos(null);
+
+        assertFalse(resultado.isEmpty());
+        verify(tramiteRepository, times(1)).findAll();
+    }
+
     // --- PRUEBAS: cancelarTramite ---
     @Test
     @DisplayName("Debe cancelar un trámite exitosamente")
@@ -209,6 +222,38 @@ class TramiteServiceTest {
 
         TramiteResponseDTO response = tramiteService.crearNuevoTramite(request);
         assertNotNull(response);
+    }
+
+    @Test
+    @DisplayName("Debe crear trámite en modo emergencia sin invocar clientes remotos ni notificaciones")
+    void crearNuevoTramite_ModoEmergencia() throws Exception {
+        java.lang.reflect.Field field = TramiteService.class.getDeclaredField("modoEmergencia");
+        field.setAccessible(true);
+        field.set(tramiteService, true);
+
+        TramiteRequestDTO request = new TramiteRequestDTO();
+        request.setIdUsuario(100L);
+        request.setIdVehiculo(200L);
+        request.setPasajeros(List.of(new PasajeroRequestDTO()));
+
+        Tramite nuevoTramite = new Tramite();
+        nuevoTramite.setIdTramite(idTramiteValido);
+        nuevoTramite.setIdUsuario(100L);
+        nuevoTramite.setIdVehiculo(200L);
+
+        when(tramiteMapper.toEntity(request)).thenReturn(nuevoTramite);
+        when(pasajeroMapper.toEntity(any())).thenReturn(new Pasajero());
+        when(tramiteRepository.save(any(Tramite.class))).thenReturn(nuevoTramite);
+        when(tramiteRepository.findById(idTramiteValido)).thenReturn(Optional.of(nuevoTramite));
+        when(tramiteMapper.toResponse(any(Tramite.class))).thenReturn(new TramiteResponseDTO());
+        when(estadoTramiteService.agregarEstado(any(Tramite.class), any(TipoEstado.class), anyString())).thenReturn(new EstadoTramite());
+
+        TramiteResponseDTO response = tramiteService.crearNuevoTramite(request);
+
+        assertNotNull(response);
+        verify(usuarioClient, times(0)).obtenerUsuarioPorId(any());
+        verify(vehiculoClient, times(0)).obtenerVehiculoPorId(any());
+        verify(notificacionClient, times(0)).enviarMensaje(any(NotificacionRequestDTO.class));
     }
 
     // --- PRUEBAS: evaluarRiesgoTramite (Caminos del Switch) ---
@@ -306,6 +351,51 @@ class TramiteServiceTest {
     }
 
     @Test
+    @DisplayName("Debe modificar un pasajero existente en el trámite")
+    void modificarPasajero_Exito() {
+        Pasajero pasajeroExistente = new Pasajero();
+        pasajeroExistente.setIdPasajero(99L);
+        pasajeroExistente.setNroDocumento("00000000");
+        tramiteMock.getPasajeros().add(pasajeroExistente);
+
+        PasajeroRequestDTO request = new PasajeroRequestDTO();
+        request.setNroDocumento("11111111");
+        Pasajero actualizado = new Pasajero();
+        actualizado.setIdPasajero(99L);
+        actualizado.setNroDocumento("11111111");
+
+        when(tramiteRepository.findById(idTramiteValido)).thenReturn(Optional.of(tramiteMock));
+        when(pasajeroMapper.updateEntityFromRequest(pasajeroExistente, request)).thenReturn(actualizado);
+        when(pasajeroMapper.toResponse(any(Pasajero.class))).thenReturn(new PasajeroResponseDTO());
+
+        PasajeroResponseDTO respuesta = tramiteService.modificarPasajero(idTramiteValido, 99L, request);
+        assertNotNull(respuesta);
+        assertEquals("00000000", pasajeroExistente.getNroDocumento());
+    }
+
+    @Test
+    @DisplayName("Debe lanzar ResourceNotFoundException si el pasajero no existe al modificar")
+    void modificarPasajero_NoEncontrado() {
+        when(tramiteRepository.findById(idTramiteValido)).thenReturn(Optional.of(tramiteMock));
+        assertThrows(ResourceNotFoundException.class, () -> tramiteService.modificarPasajero(idTramiteValido, 123L, new PasajeroRequestDTO()));
+    }
+
+    @Test
+    @DisplayName("Debe listar los pasajeros del trámite")
+    void listarPasajeros_Exito() {
+        Pasajero p = new Pasajero();
+        p.setIdPasajero(23L);
+        tramiteMock.getPasajeros().add(p);
+
+        when(tramiteRepository.findById(idTramiteValido)).thenReturn(Optional.of(tramiteMock));
+        when(pasajeroMapper.toResponse(p)).thenReturn(new PasajeroResponseDTO());
+
+        List<PasajeroResponseDTO> resultados = tramiteService.listarPasajeros(idTramiteValido);
+        assertNotNull(resultados);
+        assertEquals(1, resultados.size());
+    }
+
+    @Test
     @DisplayName("Debe actualizar un trámite y devolver resumen")
     void actualizarTramite_Exito() {
         TramiteRequestUpdateDTO updateRequest = new TramiteRequestUpdateDTO();
@@ -367,6 +457,18 @@ class TramiteServiceTest {
     void evaluarRiesgo_NoUsuario() {
         when(tramiteRepository.findById(idTramiteValido)).thenReturn(Optional.of(tramiteMock));
         when(usuarioClient.obtenerUsuarioPorId(any())).thenReturn(null);
+        assertThrows(ResourceNotFoundException.class, () -> tramiteService.evaluarRiesgoTramite(idTramiteValido));
+    }
+
+    @Test
+    @DisplayName("Debe lanzar ResourceNotFoundException cuando no se encuentra el vehículo en evaluación de riesgo")
+    void evaluarRiesgo_NoVehiculo() {
+        when(tramiteRepository.findById(idTramiteValido)).thenReturn(Optional.of(tramiteMock));
+        UsuarioClientResponseDTO uRes = new UsuarioClientResponseDTO();
+        uRes.setNroDocumento("123");
+        when(usuarioClient.obtenerUsuarioPorId(any())).thenReturn(uRes);
+        when(vehiculoClient.obtenerVehiculoPorId(any())).thenReturn(null);
+
         assertThrows(ResourceNotFoundException.class, () -> tramiteService.evaluarRiesgoTramite(idTramiteValido));
     }
 
