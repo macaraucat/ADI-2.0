@@ -90,6 +90,12 @@ class TramiteServiceTest {
         tramiteMock.setEstadoActual(TipoEstado.INGRESADO);
     }
 
+    private void setModoEmergencia(boolean modo) throws Exception {
+        java.lang.reflect.Field field = TramiteService.class.getDeclaredField("modoEmergencia");
+        field.setAccessible(true);
+        field.set(tramiteService, modo);
+    }
+
     // --- PRUEBAS: findTramiteOrThrow & findById ---
     @Test
     @DisplayName("Debe retornar trámite cuando el ID existe")
@@ -186,7 +192,9 @@ class TramiteServiceTest {
 
     @Test
     @DisplayName("Debe crear trámite exitosamente con pasajeros y flujo de notificación")
-    void crearNuevoTramite_Exito() {
+    void crearNuevoTramite_Exito() throws Exception {
+        setModoEmergencia(false);
+
         TramiteRequestDTO request = new TramiteRequestDTO();
         request.setIdUsuario(100L);
         request.setIdVehiculo(200L);
@@ -197,8 +205,6 @@ class TramiteServiceTest {
         nuevoTramite.setIdUsuario(100L);
         nuevoTramite.setIdVehiculo(200L);
 
-        when(usuarioClient.obtenerUsuarioPorId(100L)).thenReturn(new UsuarioClientResponseDTO());
-        when(vehiculoClient.obtenerVehiculoPorId(200L)).thenReturn(new VehiculoClientResponseDTO());
         when(tramiteMapper.toEntity(request)).thenReturn(nuevoTramite);
         when(pasajeroMapper.toEntity(any())).thenReturn(new Pasajero());
         when(tramiteRepository.save(any(Tramite.class))).thenReturn(nuevoTramite);
@@ -259,7 +265,8 @@ class TramiteServiceTest {
     // --- PRUEBAS: evaluarRiesgoTramite (Caminos del Switch) ---
     @Test
     @DisplayName("Debe evaluar riesgo BAJO y pasar a APROBADO_AUTOMATICO")
-    void evaluarRiesgo_Bajo() {
+    void evaluarRiesgo_Bajo() throws Exception {
+        setModoEmergencia(false);
         when(tramiteRepository.findById(idTramiteValido)).thenReturn(Optional.of(tramiteMock));
 
         UsuarioClientResponseDTO uRes = new UsuarioClientResponseDTO();
@@ -280,7 +287,8 @@ class TramiteServiceTest {
 
     @Test
     @DisplayName("Debe evaluar riesgo ALTO y pasar a RECHAZADO_AUTOMATICO")
-    void evaluarRiesgo_Alto() {
+    void evaluarRiesgo_Alto() throws Exception {
+        setModoEmergencia(false);
         when(tramiteRepository.findById(idTramiteValido)).thenReturn(Optional.of(tramiteMock));
 
         UsuarioClientResponseDTO uRes = new UsuarioClientResponseDTO();
@@ -435,7 +443,8 @@ class TramiteServiceTest {
 
     @Test
     @DisplayName("Debe evaluar riesgo MEDIO y pasar a REQUIERE_INSPECCION")
-    void evaluarRiesgo_Medio() {
+    void evaluarRiesgo_Medio() throws Exception {
+        setModoEmergencia(false);
         when(tramiteRepository.findById(idTramiteValido)).thenReturn(Optional.of(tramiteMock));
         UsuarioClientResponseDTO uRes = new UsuarioClientResponseDTO();
         uRes.setNroDocumento("123");
@@ -454,7 +463,8 @@ class TramiteServiceTest {
 
     @Test
     @DisplayName("Debe lanzar ResourceNotFoundException cuando no se encuentra el usuario en evaluación de riesgo")
-    void evaluarRiesgo_NoUsuario() {
+    void evaluarRiesgo_NoUsuario() throws Exception {
+        setModoEmergencia(false);
         when(tramiteRepository.findById(idTramiteValido)).thenReturn(Optional.of(tramiteMock));
         when(usuarioClient.obtenerUsuarioPorId(any())).thenReturn(null);
         assertThrows(ResourceNotFoundException.class, () -> tramiteService.evaluarRiesgoTramite(idTramiteValido));
@@ -462,7 +472,8 @@ class TramiteServiceTest {
 
     @Test
     @DisplayName("Debe lanzar ResourceNotFoundException cuando no se encuentra el vehículo en evaluación de riesgo")
-    void evaluarRiesgo_NoVehiculo() {
+    void evaluarRiesgo_NoVehiculo() throws Exception {
+        setModoEmergencia(false);
         when(tramiteRepository.findById(idTramiteValido)).thenReturn(Optional.of(tramiteMock));
         UsuarioClientResponseDTO uRes = new UsuarioClientResponseDTO();
         uRes.setNroDocumento("123");
@@ -490,5 +501,13 @@ class TramiteServiceTest {
     @DisplayName("Debe lanzar UnsupportedOperationException para actualizaEstadoGlobal no implementado")
     void actualizaEstadoGlobal_NoImplementado() {
         assertThrows(UnsupportedOperationException.class, () -> tramiteService.actualizaEstadoGlobal(idTramiteValido));
+    }
+
+    @Test
+    @DisplayName("Debe lanzar ResourceNotFoundException al evaluar riesgo de trámite no existente")
+    void evaluarRiesgo_NoTramite() throws Exception {
+        setModoEmergencia(false);
+        when(tramiteRepository.findById(idTramiteValido)).thenReturn(Optional.empty());
+        assertThrows(ResourceNotFoundException.class, () -> tramiteService.evaluarRiesgoTramite(idTramiteValido));
     }
 }

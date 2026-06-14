@@ -17,6 +17,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -26,6 +27,7 @@ import cl.aduana.ms_travel.dto.estado.EstadoTramiteResponseDTO;
 import cl.aduana.ms_travel.dto.pasajero.PasajeroRequestDTO;
 import cl.aduana.ms_travel.dto.pasajero.PasajeroResponseDTO;
 import cl.aduana.ms_travel.dto.tramite.TramiteRequestDTO;
+import cl.aduana.ms_travel.dto.tramite.TramiteRequestUpdateDTO;
 import cl.aduana.ms_travel.dto.tramite.TramiteResponseDTO;
 import cl.aduana.ms_travel.dto.tramite.TramiteResumenResponseDTO;
 import cl.aduana.ms_travel.model.TipoEstado;
@@ -187,5 +189,127 @@ class TramiteControllerTest {
         mockMvc.perform(delete("/api/v1/tramites/1/pasajeros/2"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").value("Pasajero Eliminado de forma exitosa"));
+    }
+
+    @Test
+    @DisplayName("PUT /api/v1/tramites/{id} debe actualizar el tramite")
+    void actualizarTramite_DeberiaRetornarResumen() throws Exception {
+        TramiteRequestUpdateDTO update = TramiteRequestUpdateDTO.builder()
+                .idUsuario(100L)
+                .idVehiculo(200L)
+                .build();
+
+        TramiteResumenResponseDTO resumen = TramiteResumenResponseDTO.builder()
+                .idTramite(1L)
+                .idUsuario(100L)
+                .idVehiculo(200L)
+                .tipoTramite(TipoTramite.INGRESO)
+                .estadoGlobal(TipoEstado.INGRESADO)
+                .build();
+
+        when(tramiteService.actualizarTramite(eq(1L), any(TramiteRequestUpdateDTO.class))).thenReturn(resumen);
+
+        mockMvc.perform(put("/api/v1/tramites/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(update)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.idTramite").value(1))
+                .andExpect(jsonPath("$.idUsuario").value(100));
+    }
+
+    @Test
+    @DisplayName("PATCH /api/v1/tramites/{id}/aprobar debe aprobar el tramite")
+    void aprobarTramite_DeberiaRetornarEstado() throws Exception {
+        EstadoTramiteResponseDTO estadoResponse = EstadoTramiteResponseDTO.builder()
+                .tipoEstado(TipoEstado.APROBADO)
+                .comentario("Aprobado manual")
+                .build();
+
+        when(tramiteService.aprobarTramite(1L)).thenReturn(estadoResponse);
+
+        mockMvc.perform(patch("/api/v1/tramites/1/aprobar"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.tipoEstado").value("APROBADO"));
+    }
+
+    @Test
+    @DisplayName("POST /api/v1/tramites/{id}/evaluar-riesgo debe evaluar riesgo")
+    void evaluarRiesgo_DeberiaRetornarTramite() throws Exception {
+        TramiteResponseDTO response = TramiteResponseDTO.builder()
+                .idTramite(2L)
+                .idUsuario(101L)
+                .idVehiculo(201L)
+                .tipoTramite(TipoTramite.SALIDA)
+                .estadoGlobal(TipoEstado.REQUIERE_INSPECCION)
+                .build();
+
+        when(tramiteService.evaluarRiesgoTramite(2L)).thenReturn(response);
+
+        mockMvc.perform(post("/api/v1/tramites/2/evaluar-riesgo"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.idTramite").value(2));
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/tramites/{id}/pasajeros debe listar pasajeros")
+    void listarPasajeros_DeberiaRetornarLista() throws Exception {
+        PasajeroResponseDTO p = PasajeroResponseDTO.builder()
+                .idPasajero(5L)
+                .tipoDocumento("DNI")
+                .nroDocumento("55555555")
+                .nacionalidad("CHILE")
+                .build();
+
+        when(tramiteService.listarPasajeros(1L)).thenReturn(List.of(p));
+
+        mockMvc.perform(get("/api/v1/tramites/1/pasajeros"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].idPasajero").value(5))
+                .andExpect(jsonPath("$[0].nroDocumento").value("55555555"));
+    }
+
+    @Test
+    @DisplayName("PUT /api/v1/tramites/{id}/pasajeros/{idPasajero} debe modificar pasajero")
+    void modificarPasajero_DeberiaRetornarDto() throws Exception {
+        PasajeroRequestDTO req = PasajeroRequestDTO.builder()
+                .tipoDocumento("DNI")
+                .nroDocumento("99999999")
+                .nacionalidad("CHILE")
+                .fechaNacimiento(LocalDate.parse("1995-03-03"))
+                .build();
+
+        PasajeroResponseDTO resp = PasajeroResponseDTO.builder()
+                .idPasajero(2L)
+                .tipoDocumento("DNI")
+                .nroDocumento("99999999")
+                .nacionalidad("CHILE")
+                .build();
+
+        when(tramiteService.modificarPasajero(eq(1L), eq(2L), any(PasajeroRequestDTO.class))).thenReturn(resp);
+
+        mockMvc.perform(put("/api/v1/tramites/1/pasajeros/2")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.idPasajero").value(2))
+                .andExpect(jsonPath("$.nroDocumento").value("99999999"));
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/tramites con estados debe filtrar por estados")
+    void listarTramites_PorEstados_DeberiaRetornarLista() throws Exception {
+        TramiteResumenResponseDTO resumen = TramiteResumenResponseDTO.builder()
+                .idTramite(3L)
+                .idUsuario(150L)
+                .idVehiculo(250L)
+                .tipoTramite(TipoTramite.INGRESO)
+                .estadoGlobal(TipoEstado.INGRESADO)
+                .build();
+
+        when(tramiteService.listarTodos(List.of(TipoEstado.INGRESADO))).thenReturn(List.of(resumen));
+
+        mockMvc.perform(get("/api/v1/tramites?estados=INGRESADO"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].idTramite").value(3));
     }
 }

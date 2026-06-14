@@ -55,7 +55,7 @@ public class TramiteService {
 
     // Testing de vías de emergencia sin afectar la lógica real del servicio
     @Value("${app.modo-emergencia:false}")
-    private final boolean modoEmergencia = true;
+    private boolean modoEmergencia;
 
     public Tramite findTramiteOrThrow(Long idTramite) {
         log.info("iniciando busqueda para id: {}", idTramite);
