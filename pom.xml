@@ -18,6 +18,8 @@
 		<module>ms-report</module>
 		<module>ms-risk</module>
 		<module>ms-vehicle</module>
+		<module>api-gateway</module>
+		<module>eureka</module>
 	</modules>
 
 </project>
