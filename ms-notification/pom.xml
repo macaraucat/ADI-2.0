@@ -168,7 +168,11 @@
 				<configuration>
 					<skip>false</skip>
 					<excludes>
-						<exclude>**/model/**</exclude>
+						<exclude>**/dto/**/*.class</exclude>
+						<exclude>**/model/**/*.class</exclude>
+						<exclude>**/repository/**/*.class</exclude>
+						<exclude>**/client/**/*.class</exclude>
+						<exclude>**/NotificationApplication.class</exclude>
 					</excludes>
 				</configuration>
 				<executions>
