@@ -42,3 +42,6 @@ tmp/
 *.h2.db
 *.mv.db
 *.trace.db
+
+# Ignorar archivos de la configuración con datos sensibles
+*.env
