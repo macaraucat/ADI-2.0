@@ -155,8 +155,11 @@
 				<configuration>
 					<skip>false</skip>
 					<excludes>
-						<exclude>**/dto/**</exclude>
-						<exclude>**/model/**</exclude>
+						<exclude>**/dto/**/*.class</exclude>
+						<exclude>**/model/**/*.class</exclude>
+						<exclude>**/repository/**/*.class</exclude>
+						<exclude>**/client/**/*.class</exclude>
+						<exclude>**/TravelApplication.class</exclude>
 					</excludes>
 				</configuration>
 				<executions>
