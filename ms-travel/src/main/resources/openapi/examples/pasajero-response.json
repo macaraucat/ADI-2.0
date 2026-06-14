@@ -1,0 +1,7 @@
+{
+  "idPasajero": 1,
+  "tipoDocumento": "DNI",
+  "nroDocumento": "12345678",
+  "nacionalidad": "CHILE",
+  "fechaNacimiento": "1990-01-01"
+}
