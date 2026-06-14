@@ -3,8 +3,8 @@ CREATE SCHEMA IF NOT EXISTS bd_tramites;
 -- 1. Tabla Estado
 CREATE TABLE bd_tramites.estado (
     id_estado INT NOT NULL GENERATED ALWAYS AS IDENTITY,
-    nombre_estado VARCHAR(20) NOT NULL,
-    descripcion VARCHAR(200),
+    nombre_estado VARCHAR(50) NOT NULL,
+    descripcion VARCHAR(400),
     
     CONSTRAINT pk_estado PRIMARY KEY (id_estado),
     CONSTRAINT uk_nombre_estado UNIQUE (nombre_estado)
@@ -15,9 +15,9 @@ CREATE TABLE bd_tramites.tramite (
     id_tramite BIGINT NOT NULL GENERATED ALWAYS AS IDENTITY,
     id_usuario BIGINT,
     id_vehiculo BIGINT,
-    tipo_tramite VARCHAR(20),
+    tipo_tramite VARCHAR(50),
     fecha_de_ingreso TIMESTAMP,
-    estado_actual VARCHAR(20),
+    estado_actual VARCHAR(50),
 
     CONSTRAINT pk_tramite PRIMARY KEY (id_tramite)
 );
@@ -25,9 +25,9 @@ CREATE TABLE bd_tramites.tramite (
 -- 3. Tabla Pasajero
 CREATE TABLE bd_tramites.pasajero (
     id_pasajero BIGINT NOT NULL GENERATED ALWAYS AS IDENTITY,
-    tipo_documento VARCHAR(15) NOT NULL,
-    nro_documento VARCHAR(15) NOT NULL,
-    nacionalidad VARCHAR(15) NOT NULL,
+    tipo_documento VARCHAR(30) NOT NULL,
+    nro_documento VARCHAR(30) NOT NULL,
+    nacionalidad VARCHAR(30) NOT NULL,
     fecha_nacimiento DATE NOT NULL, -- Corregido directamente a DATE según tu V2 anterior
     id_tramite BIGINT,
 

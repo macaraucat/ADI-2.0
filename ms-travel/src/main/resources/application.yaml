@@ -68,7 +68,7 @@ info:
   app:
     name: ms-travel
     version: 0.0.1
-    modo-emergencia: ${MODO_EMERGENCIA_MOCK:false}
+    modo-emergencia: "${MODO_EMERGENCIA_MOCK}"
 
 logging:
   file:
