@@ -9,7 +9,6 @@ import cl.aduana.ms_travel.dto.estado.EstadoTramiteResponseDTO;
 import cl.aduana.ms_travel.dto.pasajero.PasajeroResponseDTO;
 import cl.aduana.ms_travel.model.TipoEstado;
 import cl.aduana.ms_travel.model.TipoTramite;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,8 +17,8 @@ import lombok.NoArgsConstructor;
 @Builder @Data @NoArgsConstructor @AllArgsConstructor
 @JsonPropertyOrder({
     "idTramite", 
-    "userId", 
-    "vehiculoId", 
+    "idUsuario", 
+    "idVehiculo", 
     "tipoTramite", 
     "estadoGlobal", 
     "fechaDeIngreso", 

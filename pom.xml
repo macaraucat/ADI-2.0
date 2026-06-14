@@ -11,7 +11,6 @@
 	<description>Proyecto padre de microservicios Aduana</description>
 
 	<modules>
-		<module>common</module>
 		<module>ms-travel</module>
 		<module>ms-login</module>
 		<module>ms-notification</module>
