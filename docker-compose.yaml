@@ -1,0 +1,120 @@
+version: '3.8'
+
+services:
+  eureka-server:
+    build: ./eureka
+    container_name: eureka
+    ports:
+      - "8761:8761"
+    environment:
+      - SERVER_PORT=8761
+
+  api-gateway:
+    build: ./api_gateway
+    container_name: gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - eureka-server
+    environment:
+      - SERVER_PORT=8080
+      - SPRING_APPLICATION_NAME=api-gateway
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka
+
+  ms-login:
+    build: ./ms-login
+    container_name: login
+    ports:
+      - "8081:8081"
+    depends_on:
+      - eureka-server
+    environment:
+      - SERVER_PORT=8081
+      - SPRING_APPLICATION_NAME=ms-usuario
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://aws-1-us-west-2.pooler.supabase.com:6543/postgres?prepareThreshold=0&sslmode=require
+      - SPRING_DATASOURCE_USERNAME=postgres.sgauqlruohmhfvpezfpx
+      - SPRING_DATASOURCE_PASSWORD=AduanaPro123
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - SPRING_FLYWAY_ENABLED=false
+
+  ms-vehicle:
+    build: ./ms-vehicle
+    container_name: vehicle
+    ports:
+      - "8082:8082"
+    depends_on: [eureka-server]
+    environment:
+      - SERVER_PORT=8082
+      - SPRING_APPLICATION_NAME=ms-vehiculo
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://aws-1-us-west-2.pooler.supabase.com:6543/postgres?prepareThreshold=0&sslmode=require
+      - SPRING_DATASOURCE_USERNAME=postgres.sgauqlruohmhfvpezfpx
+      - SPRING_DATASOURCE_PASSWORD=AduanaPro123
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - SPRING_FLYWAY_ENABLED=false
+
+  ms-travel:
+    build: ./ms-travel
+    container_name: travel
+    ports:
+      - "8083:8083"
+    depends_on: [eureka-server]
+    environment:
+      - SERVER_PORT=8083
+      - SPRING_APPLICATION_NAME=ms-travel
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://aws-1-us-west-2.pooler.supabase.com:6543/postgres?prepareThreshold=0&sslmode=require
+      - SPRING_DATASOURCE_USERNAME=postgres.sgauqlruohmhfvpezfpx
+      - SPRING_DATASOURCE_PASSWORD=AduanaPro123
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - SPRING_FLYWAY_ENABLED=false
+      - APP_MODO_EMERGENCIA=false
+
+  ms-risk:
+    build: ./ms-risk
+    container_name: risk
+    ports:
+      - "8084:8084"
+    depends_on: [eureka-server]
+    environment:
+      - SERVER_PORT=8084
+      - SPRING_APPLICATION_NAME=ms-riesgo
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://aws-1-us-west-2.pooler.supabase.com:6543/postgres?prepareThreshold=0&sslmode=require
+      - SPRING_DATASOURCE_USERNAME=postgres.sgauqlruohmhfvpezfpx
+      - SPRING_DATASOURCE_PASSWORD=AduanaPro123
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - SPRING_FLYWAY_ENABLED=false
+
+  ms-report:
+    build: ./ms-report
+    container_name: report
+    ports:
+      - "8085:8085"
+    depends_on: [eureka-server]
+    environment:
+      - SERVER_PORT=8085
+      - SPRING_APPLICATION_NAME=ms-report
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://aws-1-us-west-2.pooler.supabase.com:6543/postgres?prepareThreshold=0&sslmode=require
+      - SPRING_DATASOURCE_USERNAME=postgres.sgauqlruohmhfvpezfpx
+      - SPRING_DATASOURCE_PASSWORD=AduanaPro123
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - SPRING_FLYWAY_ENABLED=false
+
+  ms-notification:
+    build: ./ms-notification
+    container_name: notification
+    ports:
+      - "8086:8086"
+    depends_on: [eureka-server]
+    environment:
+      - SERVER_PORT=8086
+      - SPRING_APPLICATION_NAME=ms-notificacion
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://aws-1-us-west-2.pooler.supabase.com:6543/postgres?prepareThreshold=0&sslmode=require
+      - SPRING_DATASOURCE_USERNAME=postgres.sgauqlruohmhfvpezfpx
+      - SPRING_DATASOURCE_PASSWORD=AduanaPro123
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - SPRING_FLYWAY_ENABLED=false
