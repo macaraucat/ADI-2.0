@@ -53,7 +53,7 @@ public class TramiteService {
     private final VehiculoClient vehiculoClient;
     private final NotificacionClient notificacionClient;
 
-    // Inyectamos la variable de emergencia
+    // Testing de vías de emergencia sin afectar la lógica real del servicio
     @Value("${app.modo-emergencia:false}")
     private boolean modoEmergencia;
 
@@ -107,7 +107,7 @@ public class TramiteService {
             throw new BadRequestException("idUsuario e idVehiculo son obligatorios");
         }        
         
-        // 🚨 VÍA DE EMERGENCIA 1: SIMULACIÓN DE CLIENTES (USUARIO Y VEHÍCULO)
+        //SIMULACIÓN DE CLIENTES (USUARIO Y VEHÍCULO)
         if (modoEmergencia) {
             log.warn("[MODO EMERGENCIA] Saltando llamadas reales a UsuarioClient y VehiculoClient");
         } else {
@@ -132,7 +132,7 @@ public class TramiteService {
         Tramite guardado = tramiteRepository.save(nuevo);
         estadoTramiteService.agregarEstado(guardado, TipoEstado.INGRESADO, "Tramite creado con exito");
 
-        // 🚨 VÍA DE EMERGENCIA 2: SIMULACIÓN DE NOTIFICACIÓN
+        //SIMULACIÓN DE NOTIFICACIÓN
         if (modoEmergencia) {
             log.warn("[MODO EMERGENCIA] Simulando envío de notificación por correo exitosa");
         } else {
@@ -162,7 +162,7 @@ public class TramiteService {
         String nroDocumentoSujeto = "MOCK-DOC-123";
         String patente = "MOCK-PAT-999";
 
-        // 🚨 VÍA DE EMERGENCIA 3: SIMULACIÓN DE CLIENTES EN RIESGO
+        //SIMULACIÓN DE CLIENTES EN RIESGO
         if (modoEmergencia) {
             log.warn("[MODO EMERGENCIA] Creando datos simulados para análisis de riesgo");
         } else {
@@ -180,7 +180,7 @@ public class TramiteService {
 
         EvaluacionRiesgoResponseDTO resultadoRiesgo;
 
-        // 🚨 VÍA DE EMERGENCIA 4: SIMULACIÓN DE RESPUESTA DE RIESGO
+        //  SIMULACIÓN DE RESPUESTA DE RIESGO
         if (modoEmergencia) {
             log.warn("[MODO EMERGENCIA] Simulando análisis del RiskClient -> Retornando riesgo BAJO predefinido");
 
