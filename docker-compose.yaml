@@ -28,13 +28,12 @@ services:
             - SPRING_APPLICATION_NAME=ms-usuario
             - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-server:8761/eureka
             - SPRING_DATASOURCE_URL=${DB_URL}
-            - SPRING_DATASOURCE_USERNAME=${DB_USER}
+            - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
             - SPRING_DATASOURCE_PASSWORD=${DB_PASS}
             - SPRING_JPA_HIBERNATE_DDL_AUTO=update
             - SPRING_FLYWAY_ENABLED=false
     restart: on-failure
-
-  # copia el mismo bloque para los demás, solo cambia puerto y nombre
+    
   ms-vehicle:
     build: ./ms-vehicle
     ports: ["8082:8082"]
@@ -43,7 +42,7 @@ services:
             - SPRING_APPLICATION_NAME=ms-vehiculo
             - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-server:8761/eureka
             - SPRING_DATASOURCE_URL=${DB_URL}
-            - SPRING_DATASOURCE_USERNAME=${DB_USER}
+            - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
             - SPRING_DATASOURCE_PASSWORD=${DB_PASS}
             - SPRING_JPA_HIBERNATE_DDL_AUTO=update
             - SPRING_FLYWAY_ENABLED=false
@@ -56,7 +55,7 @@ services:
             - SPRING_APPLICATION_NAME=ms-travel
             - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-server:8761/eureka
             - SPRING_DATASOURCE_URL=${DB_URL}
-            - SPRING_DATASOURCE_USERNAME=${DB_USER}
+            - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
             - SPRING_DATASOURCE_PASSWORD=${DB_PASS}
             - SPRING_JPA_HIBERNATE_DDL_AUTO=update
             - SPRING_FLYWAY_ENABLED=false
@@ -70,7 +69,7 @@ services:
             - SPRING_APPLICATION_NAME=ms-riesgo
             - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-server:8761/eureka
             - SPRING_DATASOURCE_URL=${DB_URL}
-            - SPRING_DATASOURCE_USERNAME=${DB_USER}
+            - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
             - SPRING_DATASOURCE_PASSWORD=${DB_PASS}
             - SPRING_JPA_HIBERNATE_DDL_AUTO=update
             - SPRING_FLYWAY_ENABLED=false
@@ -83,7 +82,7 @@ services:
             - SPRING_APPLICATION_NAME=ms-report
             - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-server:8761/eureka
             - SPRING_DATASOURCE_URL=${DB_URL}
-            - SPRING_DATASOURCE_USERNAME=${DB_USER}
+            - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
             - SPRING_DATASOURCE_PASSWORD=${DB_PASS}
             - SPRING_JPA_HIBERNATE_DDL_AUTO=update
             - SPRING_FLYWAY_ENABLED=false
@@ -96,7 +95,7 @@ services:
             - SPRING_APPLICATION_NAME=ms-notificacion
             - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-server:8761/eureka
             - SPRING_DATASOURCE_URL=${DB_URL}
-            - SPRING_DATASOURCE_USERNAME=${DB_USER}
+            - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
             - SPRING_DATASOURCE_PASSWORD=${DB_PASS}
             - SPRING_JPA_HIBERNATE_DDL_AUTO=update
             - SPRING_FLYWAY_ENABLED=false
