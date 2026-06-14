@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import cl.aduana.common.dto.request.NotificacionRequestDTO;
 import cl.aduana.common.dto.response.NotificacionResponseDTO;
 
-@FeignClient(name = "ms-notificacion", url = "http://localhost:8086/api/v1/notificaciones")
+@FeignClient(name = "ms-notificacion", path = "/api/v1/notificaciones")
 public interface NotificacionClient {
     @PostMapping("/enviar")
     Optional<NotificacionResponseDTO> enviarMensaje(@RequestBody NotificacionRequestDTO request);

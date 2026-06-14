@@ -11,7 +11,7 @@ import cl.aduana.common.dto.request.EvaluacionRiesgoRequestDTO;
 import cl.aduana.common.dto.response.AlertaClientResponseDTO;
 import cl.aduana.common.dto.response.EvaluacionRiesgoResponseDTO;
 
-@FeignClient(name = "ms-riesgo", url = "http://localhost:8084/api/v1/riesgo")
+@FeignClient(name = "ms-riesgo", path = "/api/v1/riesgo")
 public interface RiskClient {
     @PostMapping("/evaluar")
     Optional<EvaluacionRiesgoResponseDTO> evaluarRiesgo(@RequestBody EvaluacionRiesgoRequestDTO request);

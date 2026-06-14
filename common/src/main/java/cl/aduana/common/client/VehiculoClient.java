@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import cl.aduana.common.dto.response.VehiculoClientResponseDTO;
 
-@FeignClient(name = "ms-vehiculo", url = "http://localhost:8082/api/v1/vehiculos")
+@FeignClient(name = "ms-vehiculo", path = "/api/v1/vehiculos")
 public interface VehiculoClient {
     @GetMapping("/{id}")
     VehiculoClientResponseDTO obtenerVehiculoPorId(@PathVariable("id") Long id);
