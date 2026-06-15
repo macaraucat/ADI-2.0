@@ -15,7 +15,7 @@ services:
     restart: unless-stopped
     networks:
       - adi-network
-
+  
   api-gateway:
     build:
       context: .

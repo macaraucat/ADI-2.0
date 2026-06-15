@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import cl.aduana.common.dto.response.UsuarioClientResponseDTO;
 
-@FeignClient(name = "ms-usuario", path = "/api/v1/login")
+@FeignClient(name = "ms-login", path = "/api/v1/login")
 public interface UsuarioClient {
     @GetMapping("/usuarios/{id}")
     UsuarioClientResponseDTO obtenerUsuarioPorId(@PathVariable("id") Long id);
