@@ -3,7 +3,7 @@ WORKDIR /build
 COPY pom.xml .
 COPY common ./common
 COPY eureka ./eureka
-RUN mvn clean package -DskipTests -pl eureka
+RUN mvn clean package -DskipTests -pl eureka -am
 
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app

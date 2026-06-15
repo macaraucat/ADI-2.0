@@ -3,7 +3,7 @@ WORKDIR /build
 COPY pom.xml .
 COPY common ./common
 COPY api-gateway ./api-gateway
-RUN mvn clean package -DskipTests -pl api-gateway
+RUN mvn clean package -DskipTests -pl api-gateway -am
 
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
