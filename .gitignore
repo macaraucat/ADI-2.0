@@ -45,3 +45,4 @@ tmp/
 
 # Ignorar archivos de la configuración con datos sensibles
 *.env
+application-custom.properties

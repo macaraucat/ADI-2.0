@@ -189,4 +189,71 @@ public class AlertaServiceTest {
         // WHEN & THEN
         assertThrows(ResourceNotFoundException.class, () -> service.eliminar(99L));
     }
+
+
+    @Test
+void givenNonExistingInspeccion_whenGuardar_thenThrowResourceNotFoundException() {
+    AlertaDTO dto = new AlertaDTO();
+    dto.setResuelta(false);
+    dto.setIdInspeccion(99L);
+    dto.setIdCriterio(1L);
+
+    when(inspeccionRepository.findById(99L)).thenReturn(Optional.empty());
+
+    assertThrows(ResourceNotFoundException.class, () -> service.guardar(dto));
+}
+
+@Test
+void givenNonExistingCriterio_whenGuardar_thenThrowResourceNotFoundException() {
+    AlertaDTO dto = new AlertaDTO();
+    dto.setResuelta(false);
+    dto.setIdInspeccion(1L);
+    dto.setIdCriterio(99L);
+
+    Inspeccion insp = new Inspeccion();
+    insp.setIdInspeccion(1L);
+
+    when(inspeccionRepository.findById(1L)).thenReturn(Optional.of(insp));
+    when(criterioRepository.findById(99L)).thenReturn(Optional.empty());
+
+    assertThrows(ResourceNotFoundException.class, () -> service.guardar(dto));
+}
+
+@Test
+void givenNonExistingInspeccion_whenActualizar_thenThrowResourceNotFoundException() {
+    Alerta existente = new Alerta();
+    existente.setIdAlerta(1L);
+    existente.setResuelta(false);
+
+    AlertaDTO dto = new AlertaDTO();
+    dto.setResuelta(true);
+    dto.setIdInspeccion(99L);
+    dto.setIdCriterio(1L);
+
+    when(repository.findById(1L)).thenReturn(Optional.of(existente));
+    when(inspeccionRepository.findById(99L)).thenReturn(Optional.empty());
+
+    assertThrows(ResourceNotFoundException.class, () -> service.actualizar(1L, dto));
+}
+
+@Test
+void givenNonExistingCriterio_whenActualizar_thenThrowResourceNotFoundException() {
+    Alerta existente = new Alerta();
+    existente.setIdAlerta(1L);
+    existente.setResuelta(false);
+
+    Inspeccion insp = new Inspeccion();
+    insp.setIdInspeccion(1L);
+
+    AlertaDTO dto = new AlertaDTO();
+    dto.setResuelta(true);
+    dto.setIdInspeccion(1L);
+    dto.setIdCriterio(99L);
+
+    when(repository.findById(1L)).thenReturn(Optional.of(existente));
+    when(inspeccionRepository.findById(1L)).thenReturn(Optional.of(insp));
+    when(criterioRepository.findById(99L)).thenReturn(Optional.empty());
+
+    assertThrows(ResourceNotFoundException.class, () -> service.actualizar(1L, dto));
+}
 }
