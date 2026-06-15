@@ -38,7 +38,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
-@RequestMapping("api/v1/tramites")
+@RequestMapping("/api/v1/tramites")
 @Slf4j
 @RequiredArgsConstructor
 @Tag(name = "Trámites", description = "Endpoints para gestión de trámites de viaje")
@@ -59,7 +59,7 @@ public class TramiteController {
                     array = @ArraySchema(schema = @Schema(implementation = TramiteResumenResponseDTO.class)),
                     examples = @ExampleObject(
                         name = "TramiteResumenLista",
-                        externalValue = "classpath:/openapi/examples/tramite-resumen-response.json"
+                        externalValue = "/api/v1/tramites/openapi/examples/tramite-resumen-response.json"
                     )
                 )
             )
@@ -85,7 +85,7 @@ public class TramiteController {
                     schema = @Schema(implementation = TramiteResponseDTO.class),
                     examples = @ExampleObject(
                         name = "TramiteDetalle",
-                        externalValue = "classpath:/openapi/examples/tramite-crear-response.json"
+                        externalValue = "/api/v1/tramites/openapi/examples/tramite-crear-response.json"
                     )
                 )
             )
@@ -112,7 +112,7 @@ public class TramiteController {
                     schema = @Schema(implementation = TramiteResponseDTO.class),
                     examples = @ExampleObject(
                         name = "TramiteCrearResponse",
-                        externalValue = "classpath:/openapi/examples/tramite-crear-response.json"
+                        externalValue = "/api/v1/tramites/openapi/examples/tramite-crear-response.json"
                     )
                 )
             )
@@ -129,7 +129,7 @@ public class TramiteController {
                     schema = @Schema(implementation = TramiteRequestDTO.class),
                     examples = @ExampleObject(
                         name = "TramiteCrearRequest",
-                        externalValue = "classpath:/openapi/examples/tramite-crear-request.json"
+                        externalValue = "/api/v1/tramites/openapi/examples/tramite-crear-request.json"
                     )
                 )
             )
@@ -153,7 +153,7 @@ public class TramiteController {
                     schema = @Schema(implementation = TramiteResumenResponseDTO.class),
                     examples = @ExampleObject(
                         name = "TramiteActualizarResponse",
-                        externalValue = "classpath:/openapi/examples/tramite-resumen-response.json"
+                        externalValue = "/api/v1/tramites/openapi/examples/tramite-resumen-response.json"
                     )
                 )
             )
@@ -171,7 +171,7 @@ public class TramiteController {
                     schema = @Schema(implementation = TramiteRequestUpdateDTO.class),
                     examples = @ExampleObject(
                         name = "TramiteActualizarRequest",
-                        externalValue = "classpath:/openapi/examples/tramite-actualizar-request.json"
+                        externalValue = "/api/v1/tramites/openapi/examples/tramite-actualizar-request.json"
                     )
                 )
             )
@@ -193,7 +193,7 @@ public class TramiteController {
                     schema = @Schema(implementation = EstadoTramiteResponseDTO.class),
                     examples = @ExampleObject(
                         name = "TramiteCancelarResponse",
-                        externalValue = "classpath:/openapi/examples/tramite-estado-response.json"
+                        externalValue = "/api/v1/tramites/openapi/examples/tramite-estado-response.json"
                     )
                 )
             )
@@ -220,7 +220,7 @@ public class TramiteController {
                     schema = @Schema(implementation = EstadoTramiteResponseDTO.class),
                     examples = @ExampleObject(
                         name = "TramiteAprobarResponse",
-                        externalValue = "classpath:/openapi/examples/tramite-estado-response.json"
+                        externalValue = "/api/v1/tramites/openapi/examples/tramite-estado-response.json"
                     )
                 )
             )
@@ -247,7 +247,7 @@ public class TramiteController {
                     schema = @Schema(implementation = TramiteResponseDTO.class),
                     examples = @ExampleObject(
                         name = "TramiteEvaluarRiesgoResponse",
-                        externalValue = "classpath:/openapi/examples/tramite-crear-response.json"
+                        externalValue = "/api/v1/tramites/openapi/examples/tramite-crear-response.json"
                     )
                 )
             )
@@ -274,7 +274,7 @@ public class TramiteController {
                     array = @ArraySchema(schema = @Schema(implementation = TramiteResumenResponseDTO.class)),
                     examples = @ExampleObject(
                         name = "TramiteBuscarLista",
-                        externalValue = "classpath:/openapi/examples/tramite-resumen-response.json"
+                        externalValue = "/api/v1/tramites/openapi/examples/tramite-resumen-response.json"
                     )
                 )
             )
@@ -304,7 +304,7 @@ public class TramiteController {
                     array = @ArraySchema(schema = @Schema(implementation = PasajeroResponseDTO.class)),
                     examples = @ExampleObject(
                         name = "PasajeroListaResponse",
-                        externalValue = "classpath:/openapi/examples/pasajero-response.json"
+                        externalValue = "/api/v1/tramites/openapi/examples/pasajero-response.json"
                     )
                 )
             )
@@ -330,7 +330,7 @@ public class TramiteController {
                     schema = @Schema(implementation = PasajeroResponseDTO.class),
                     examples = @ExampleObject(
                         name = "PasajeroAgregarResponse",
-                        externalValue = "classpath:/openapi/examples/pasajero-response.json"
+                        externalValue = "/api/v1/tramites/openapi/examples/pasajero-response.json"
                     )
                 )
             )
@@ -349,7 +349,7 @@ public class TramiteController {
                     schema = @Schema(implementation = PasajeroRequestDTO.class),
                     examples = @ExampleObject(
                         name = "PasajeroAgregarRequest",
-                        externalValue = "classpath:/openapi/examples/pasajero-request.json"
+                        externalValue = "/api/v1/tramites/openapi/examples/pasajero-request.json"
                     )
                 )
             )
@@ -371,7 +371,7 @@ public class TramiteController {
                     schema = @Schema(implementation = PasajeroResponseDTO.class),
                     examples = @ExampleObject(
                         name = "PasajeroModificarResponse",
-                        externalValue = "classpath:/openapi/examples/pasajero-response.json"
+                        externalValue = "/api/v1/tramites/openapi/examples/pasajero-response.json"
                     )
                 )
             )
@@ -392,7 +392,7 @@ public class TramiteController {
                     schema = @Schema(implementation = PasajeroRequestDTO.class),
                     examples = @ExampleObject(
                         name = "PasajeroModificarRequest",
-                        externalValue = "classpath:/openapi/examples/pasajero-request.json"
+                        externalValue = "/api/v1/tramites/openapi/examples/pasajero-request.json"
                     )
                 )
             )
