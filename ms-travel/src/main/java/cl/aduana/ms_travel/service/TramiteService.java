@@ -147,8 +147,7 @@ public class TramiteService {
 
         log.info("Tramite creado, preparando evaluacion de riesgo. Tramite: {}", 
             tramiteMapper.toResumenResponse(guardado));
-        
-        this.evaluarRiesgoTramite(guardado.getIdTramite());
+ 
         return tramiteMapper.toResponse(guardado);
     }
 

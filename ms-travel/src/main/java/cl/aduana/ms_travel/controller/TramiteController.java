@@ -137,6 +137,9 @@ public class TramiteController {
         log.info("POST /tramites - nuevo tramite usuario={} vehiculo={}", 
                  request.getIdUsuario(), request.getIdVehiculo());
         TramiteResponseDTO creado = service.crearNuevoTramite(request);
+        log.info("evaluando riesgo tramite={} usuario={} vehiculo={}", 
+                 creado.getIdTramite(), request.getIdUsuario(), request.getIdVehiculo());
+        service.evaluarRiesgoTramite(creado.getIdTramite());
         return ResponseEntity.status(HttpStatus.CREATED).body(creado);
     }
 

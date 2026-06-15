@@ -145,7 +145,7 @@ class TramiteServiceTest {
         List<TipoEstado> estados = List.of(TipoEstado.INGRESADO);
 
         // CORRECCIÓN: Cambiamos List.of por Optional.of para cumplir con tu repositorio
-        when(tramiteRepository.findAllByEstadoActualIn(estados)).thenReturn(Optional.of(tramiteMock));
+        when(tramiteRepository.findAllByEstadoActualIn(estados)).thenReturn(List.of(tramiteMock));
 
         when(tramiteMapper.toResumenResponse(any(Tramite.class))).thenReturn(new TramiteResumenResponseDTO());
 
