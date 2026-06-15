@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import cl.aduana.ms_report.model.Reporte;
@@ -25,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/api/v1/reportes")
 @RequiredArgsConstructor
 @Slf4j
+@Validated
 public class ReporteController {
 
     private final ReporteService service;

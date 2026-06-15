@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -14,6 +15,13 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleBadRequest(BadRequestException e){
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse("Verifique los datos enviados", e.getMessage(), LocalDateTime.now()));
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class) // 400 BAD REQUEST DE PARÁMETRO FALTANTE
+    public ResponseEntity<ErrorResponse> handleMissingParameter(MissingServletRequestParameterException e){
+        String mensaje = "El parámetro '" + e.getParameterName() + "' es obligatorio";
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse("Parámetro faltante", mensaje, LocalDateTime.now()));
     }
 
     @ExceptionHandler(ResourceNotFoundException.class) // 404 RESOURCE NOT FOUND
