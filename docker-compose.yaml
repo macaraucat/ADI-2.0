@@ -1,101 +1,167 @@
+networks:
+  adi-network:
+    driver: bridge
+
 services:
   eureka-server:
-    build: ./eureka
-    container_name: eureka
-    ports: ["8761:8761"]
+    build:
+      context: .
+      dockerfile: eureka/Dockerfile
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
     environment:
-            - SERVER_PORT=8761
+      - SERVER_PORT=8761
     restart: unless-stopped
+    networks:
+      - adi-network
 
   api-gateway:
-    build: ./api-gateway
-    container_name: gateway
-    ports: ["8080:8080"]
-    depends_on: [eureka-server]
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - eureka-server
     environment:
-            - SERVER_PORT=8080
-            - SPRING_APPLICATION_NAME=api-gateway
-            - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-server:8761/eureka
+      - SERVER_PORT=8080
+      - SPRING_APPLICATION_NAME=api-gateway
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
     restart: on-failure
+    networks:
+      - adi-network
 
   ms-login:
-    build: ./ms-login
-    container_name: login
-    ports: ["8081:8081"]
-    depends_on: [eureka-server]
+    build:
+      context: .
+      dockerfile: ms-login/Dockerfile
+    container_name: ms-login
+    ports:
+      - "8081:8081"
+    depends_on:
+      - eureka-server
     environment:
-            - SERVER_PORT=8081
-            - SPRING_APPLICATION_NAME=ms-usuario
-            - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-server:8761/eureka
-            - SPRING_DATASOURCE_URL=${DB_URL}
-            - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
-            - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
-            - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-            - SPRING_FLYWAY_ENABLED=false
+      - SERVER_PORT=8081
+      - SPRING_APPLICATION_NAME=ms-login
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_DATASOURCE_URL=${DB_URL}
+      - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - SPRING_FLYWAY_ENABLED=false
     restart: on-failure
+    networks:
+      - adi-network
 
   ms-vehicle:
-    build: ./ms-vehicle
-    ports: ["8082:8082"]
+    build:
+      context: .
+      dockerfile: ms-vehicle/Dockerfile
+    container_name: ms-vehicle
+    ports:
+      - "8082:8082"
+    depends_on:
+      - eureka-server
     environment:
-            - SERVER_PORT=8082
-            - SPRING_APPLICATION_NAME=ms-vehiculo
-            - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-server:8761/eureka
-            - SPRING_DATASOURCE_URL=${DB_URL}
-            - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
-            - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
-            - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-            - SPRING_FLYWAY_ENABLED=false
+      - SERVER_PORT=8082
+      - SPRING_APPLICATION_NAME=ms-vehicle
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_DATASOURCE_URL=${DB_URL}
+      - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - SPRING_FLYWAY_ENABLED=false
+    restart: on-failure
+    networks:
+      - adi-network
 
   ms-travel:
-    build: ./ms-travel
-    ports: ["8083:8083"]
+    build:
+      context: .
+      dockerfile: ms-travel/Dockerfile
+    container_name: ms-travel
+    ports:
+      - "8083:8083"
+    depends_on:
+      - eureka-server
     environment:
-            - SERVER_PORT=8083
-            - SPRING_APPLICATION_NAME=ms-travel
-            - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-server:8761/eureka
-            - SPRING_DATASOURCE_URL=${DB_URL}
-            - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
-            - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
-            - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-            - SPRING_FLYWAY_ENABLED=false
-            - APP_MODO_EMERGENCIA=false
+      - SERVER_PORT=8083
+      - SPRING_APPLICATION_NAME=ms-travel
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_DATASOURCE_URL=${DB_URL}
+      - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - SPRING_FLYWAY_ENABLED=false
+      - APP_MODO_EMERGENCIA=false
+    restart: on-failure
+    networks:
+      - adi-network
 
   ms-risk:
-    build: ./ms-risk
-    ports: ["8084:8084"]
+    build:
+      context: .
+      dockerfile: ms-risk/Dockerfile
+    container_name: ms-risk
+    ports:
+      - "8084:8084"
+    depends_on:
+      - eureka-server
     environment:
-            - SERVER_PORT=8084
-            - SPRING_APPLICATION_NAME=ms-riesgo
-            - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-server:8761/eureka
-            - SPRING_DATASOURCE_URL=${DB_URL}
-            - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
-            - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
-            - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-            - SPRING_FLYWAY_ENABLED=false
+      - SERVER_PORT=8084
+      - SPRING_APPLICATION_NAME=ms-risk
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_DATASOURCE_URL=${DB_URL}
+      - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - SPRING_FLYWAY_ENABLED=false
+    restart: on-failure
+    networks:
+      - adi-network
 
   ms-report:
-    build: ./ms-report
-    ports: ["8085:8085"]
+    build:
+      context: .
+      dockerfile: ms-report/Dockerfile
+    container_name: ms-report
+    ports:
+      - "8085:8085"
+    depends_on:
+      - eureka-server
     environment:
-            - SERVER_PORT=8085
-            - SPRING_APPLICATION_NAME=ms-report
-            - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-server:8761/eureka
-            - SPRING_DATASOURCE_URL=${DB_URL}
-            - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
-            - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
-            - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-            - SPRING_FLYWAY_ENABLED=false
+      - SERVER_PORT=8085
+      - SPRING_APPLICATION_NAME=ms-report
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_DATASOURCE_URL=${DB_URL}
+      - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - SPRING_FLYWAY_ENABLED=false
+    restart: on-failure
+    networks:
+      - adi-network
 
   ms-notification:
-    build: ./ms-notification
-    ports: ["8086:8086"]
+    build:
+      context: .
+      dockerfile: ms-notification/Dockerfile
+    container_name: ms-notification
+    ports:
+      - "8086:8086"
+    depends_on:
+      - eureka-server
     environment:
-            - SERVER_PORT=8086
-            - SPRING_APPLICATION_NAME=ms-notificacion
-            - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-server:8761/eureka
-            - SPRING_DATASOURCE_URL=${DB_URL}
-            - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
-            - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
-            - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-            - SPRING_FLYWAY_ENABLED=false
+      - SERVER_PORT=8086
+      - SPRING_APPLICATION_NAME=ms-notification
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_DATASOURCE_URL=${DB_URL}
+      - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - SPRING_FLYWAY_ENABLED=false
+    restart: on-failure
+    networks:
+      - adi-network

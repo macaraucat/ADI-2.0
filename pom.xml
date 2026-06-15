@@ -11,14 +11,15 @@
 	<description>Proyecto padre de microservicios Aduana</description>
 
 	<modules>
-		<module>ms-travel</module>
-		<module>ms-login</module>
-		<module>ms-notification</module>
-		<module>ms-report</module>
-		<module>ms-risk</module>
-		<module>ms-vehicle</module>
+		<module>common</module>
 		<module>api-gateway</module>
 		<module>eureka</module>
+		<module>ms-login</module>
+		<module>ms-vehicle</module>
+		<module>ms-travel</module>
+		<module>ms-risk</module>
+		<module>ms-report</module>		
+		<module>ms-notification</module>		
 	</modules>
 
 </project>
