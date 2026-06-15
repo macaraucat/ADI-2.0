@@ -1,0 +1,10 @@
+[
+  {
+    "idTramite": 1,
+    "idUsuario": 100,
+    "idVehiculo": 200,
+    "tipoTramite": "INGRESO",
+    "estadoGlobal": "INGRESADO",
+    "fechaDeIngreso": "2026-06-14T12:00:00"
+  }
+]
