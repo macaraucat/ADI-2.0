@@ -6,32 +6,128 @@ spring:
     name: api-gateway
   cloud:
     gateway:
+      # Configuraciones de conexión para evitar el 503 por desincronización de Eureka
+      httpclient:
+        connect-timeout: 5000
+        response-timeout: 5000
+      discovery:
+        locator:
+          enabled: true # Permite al gateway mapear servicios usando el nombre en la URL si es necesario
+      
       routes:
+        # ====================================================
+        # 🔐 MICROSERVICIO: MS-LOGIN
+        # ====================================================
+        - id: ms-login-docs
+          uri: lb://MS-LOGIN
+          predicates:
+            - Path=/api/v1/login/v3/api-docs
+          filters:
+            - RewritePath=/api/v1/login/v3/api-docs, /v3/api-docs
+
         - id: ms-login
           uri: lb://MS-LOGIN
           predicates:
             - Path=/api/v1/login/**
+
+        # ====================================================
+        # 🚗 MICROSERVICIO: MS-VEHICLE
+        # ====================================================
+        - id: ms-vehicle-docs
+          uri: lb://MS-VEHICLE
+          predicates:
+            - Path=/api/v1/vehiculos/v3/api-docs
+          filters:
+            - RewritePath=/api/v1/vehiculos/v3/api-docs, /v3/api-docs
+
         - id: ms-vehicle
           uri: lb://MS-VEHICLE
           predicates:
-            - Path=/api/v1/vehiculos/**,/api/v1/admisiones/**,/api/v1/conductores/**
+            - Path=/api/v1/vehiculos/**, /api/v1/admisiones/**, /api/v1/conductores/**
+
+        # ====================================================
+        # 📊 MICROSERVICIO: MS-REPORT
+        # ====================================================
+        - id: ms-report-docs
+          uri: lb://MS-REPORT
+          predicates:
+            - Path=/api/v1/reportes/v3/api-docs
+          filters:
+            - RewritePath=/api/v1/reportes/v3/api-docs, /v3/api-docs
+
         - id: ms-report
           uri: lb://MS-REPORT
           predicates:
             - Path=/api/v1/reportes/**
+
+        # ====================================================
+        # ✈️ MICROSERVICIO: MS-TRAVEL
+        # ====================================================
+        - id: ms-travel-docs
+          uri: lb://MS-TRAVEL
+          predicates:
+            - Path=/api/v1/tramites/v3/api-docs
+          filters:
+            - RewritePath=/api/v1/tramites/v3/api-docs, /v3/api-docs
+
         - id: ms-travel
           uri: lb://MS-TRAVEL
           predicates:
             - Path=/api/v1/tramites/**
+
+        # ====================================================
+        # 🔔 MICROSERVICIO: MS-NOTIFICATION
+        # ====================================================
+        - id: ms-notification-docs
+          uri: lb://MS-NOTIFICATION
+          predicates:
+            - Path=/api/v1/notificaciones/v3/api-docs
+          filters:
+            - RewritePath=/api/v1/notificaciones/v3/api-docs, /v3/api-docs
+
         - id: ms-notification
           uri: lb://MS-NOTIFICATION
           predicates:
             - Path=/api/v1/notificaciones/**
+
+        # ====================================================
+        # ⚠️ MICROSERVICIO: MS-RISK
+        # ====================================================
+        - id: ms-risk-docs
+          uri: lb://MS-RISK
+          predicates:
+            - Path=/api/v1/alerta/v3/api-docs
+          filters:
+            - RewritePath=/api/v1/alerta/v3/api-docs, /v3/api-docs
+
         - id: ms-risk
           uri: lb://MS-RISK
           predicates:
-            - Path=/api/v1/alerta/**,/api/v1/inspeccion/**,/api/v1/riesgo/**,/api/v1/patentes-infraccion/**
+            - Path=/api/v1/alerta/**, /api/v1/inspeccion/**, /api/v1/riesgo/**, /api/v1/patentes-infraccion/**
+
+# Configuración del agregador de Swagger UI en el Gateway
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+    urls:
+      - name: 🔐 Módulo Autenticación (Login)
+        url: /api/v1/login/v3/api-docs
+      - name: 🚗 Módulo Vehículos y Admisiones
+        url: /api/v1/vehiculos/v3/api-docs
+      - name: 📊 Módulo Reportes
+        url: /api/v1/reportes/v3/api-docs
+      - name: ✈️ Módulo Trámites (Travel)
+        url: /api/v1/tramites/v3/api-docs
+      - name: 🔔 Módulo Notificaciones
+        url: /api/v1/notificaciones/v3/api-docs
+      - name: ⚠️ Módulo Gestión de Riesgos
+        url: /api/v1/alerta/v3/api-docs
+
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: http://eureka-server:8761/eureka/
+  instance:
+    prefer-ip-address: false
