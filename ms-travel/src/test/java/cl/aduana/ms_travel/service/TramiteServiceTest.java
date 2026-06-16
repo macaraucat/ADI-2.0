@@ -90,12 +90,6 @@ class TramiteServiceTest {
         tramiteMock.setEstadoActual(TipoEstado.INGRESADO);
     }
 
-    private void setModoEmergencia(boolean modo) throws Exception {
-        java.lang.reflect.Field field = TramiteService.class.getDeclaredField("modoEmergencia");
-        field.setAccessible(true);
-        field.set(tramiteService, modo);
-    }
-
     // --- PRUEBAS: findTramiteOrThrow & findById ---
     @Test
     @DisplayName("Debe retornar trámite cuando el ID existe")
@@ -144,7 +138,6 @@ class TramiteServiceTest {
     void listarTodos_ConEstados() {
         List<TipoEstado> estados = List.of(TipoEstado.INGRESADO);
 
-        // CORRECCIÓN: Cambiamos List.of por Optional.of para cumplir con tu repositorio
         when(tramiteRepository.findAllByEstadoActualIn(estados)).thenReturn(List.of(tramiteMock));
 
         when(tramiteMapper.toResumenResponse(any(Tramite.class))).thenReturn(new TramiteResumenResponseDTO());
@@ -190,10 +183,9 @@ class TramiteServiceTest {
         assertThrows(BadRequestException.class, () -> tramiteService.crearNuevoTramite(request));
     }
 
-    @Test
+   @Test
     @DisplayName("Debe crear trámite exitosamente con pasajeros y flujo de notificación")
     void crearNuevoTramite_Exito() throws Exception {
-        setModoEmergencia(false);
 
         TramiteRequestDTO request = new TramiteRequestDTO();
         request.setIdUsuario(100L);
@@ -205,15 +197,7 @@ class TramiteServiceTest {
         nuevoTramite.setIdUsuario(100L);
         nuevoTramite.setIdVehiculo(200L);
 
-        when(tramiteMapper.toEntity(request)).thenReturn(nuevoTramite);
-        when(pasajeroMapper.toEntity(any())).thenReturn(new Pasajero());
-        when(tramiteRepository.save(any(Tramite.class))).thenReturn(nuevoTramite);
-
-        // Mock de dependencias internas llamadas por el método o submétodos
-        when(notificacionClient.enviarMensaje(any(NotificacionRequestDTO.class))).thenReturn(Optional.of(new NotificacionResponseDTO()));
-        when(tramiteRepository.findById(idTramiteValido)).thenReturn(Optional.of(nuevoTramite));
-
-        // Para el sub-método evaluarRiesgoTramite dentro de crear
+        // --- MOCKS DE LOS CLIENTES AL INICIO DEL MÉTODO ---
         UsuarioClientResponseDTO uRes = new UsuarioClientResponseDTO();
         uRes.setNroDocumento("123");
         VehiculoClientResponseDTO vRes = new VehiculoClientResponseDTO();
@@ -221,52 +205,31 @@ class TramiteServiceTest {
         when(usuarioClient.obtenerUsuarioPorId(100L)).thenReturn(uRes);
         when(vehiculoClient.obtenerVehiculoPorId(200L)).thenReturn(vRes);
 
-        EvaluacionRiesgoResponseDTO riskRes = new EvaluacionRiesgoResponseDTO();
-        riskRes.setNivelRiesgo("BAJO");
-        when(riskClient.evaluarRiesgo(any(EvaluacionRiesgoRequestDTO.class))).thenReturn(Optional.of(riskRes));
-        when(tramiteMapper.toResponse(any(Tramite.class))).thenReturn(new TramiteResponseDTO());
-
-        TramiteResponseDTO response = tramiteService.crearNuevoTramite(request);
-        assertNotNull(response);
-    }
-
-    @Test
-    @DisplayName("Debe crear trámite en modo emergencia sin invocar clientes remotos ni notificaciones")
-    void crearNuevoTramite_ModoEmergencia() throws Exception {
-        java.lang.reflect.Field field = TramiteService.class.getDeclaredField("modoEmergencia");
-        field.setAccessible(true);
-        field.set(tramiteService, true);
-
-        TramiteRequestDTO request = new TramiteRequestDTO();
-        request.setIdUsuario(100L);
-        request.setIdVehiculo(200L);
-        request.setPasajeros(List.of(new PasajeroRequestDTO()));
-
-        Tramite nuevoTramite = new Tramite();
-        nuevoTramite.setIdTramite(idTramiteValido);
-        nuevoTramite.setIdUsuario(100L);
-        nuevoTramite.setIdVehiculo(200L);
-
+        // --- MOCKS DE MAPEO Y GUARDADO ---
         when(tramiteMapper.toEntity(request)).thenReturn(nuevoTramite);
         when(pasajeroMapper.toEntity(any())).thenReturn(new Pasajero());
         when(tramiteRepository.save(any(Tramite.class))).thenReturn(nuevoTramite);
-        when(tramiteRepository.findById(idTramiteValido)).thenReturn(Optional.of(nuevoTramite));
-        when(tramiteMapper.toResponse(any(Tramite.class))).thenReturn(new TramiteResponseDTO());
-        when(estadoTramiteService.agregarEstado(any(Tramite.class), any(TipoEstado.class), anyString())).thenReturn(new EstadoTramite());
+        
+        // --- MOCK DEL ESTADO Y NOTIFICACIÓN ---
+        when(estadoTramiteService.agregarEstado(any(Tramite.class), any(TipoEstado.class), anyString()))
+                .thenReturn(new EstadoTramite());
+        when(notificacionClient.enviarMensaje(any(NotificacionRequestDTO.class)))
+                .thenReturn(Optional.of(new NotificacionResponseDTO()));
+        
+        // --- MOCKS DE RESPUESTA (ESTO EVITA EL NULL) ---
+        when(tramiteMapper.toResumenResponse(any(Tramite.class))).thenReturn(new TramiteResumenResponseDTO()); // Para el log
+        when(tramiteMapper.toResponse(any(Tramite.class))).thenReturn(new TramiteResponseDTO()); // Para el return final
 
+        // EJECUCIÓN
         TramiteResponseDTO response = tramiteService.crearNuevoTramite(request);
-
+        
+        // VALIDACIÓN
         assertNotNull(response);
-        verify(usuarioClient, times(0)).obtenerUsuarioPorId(any());
-        verify(vehiculoClient, times(0)).obtenerVehiculoPorId(any());
-        verify(notificacionClient, times(0)).enviarMensaje(any(NotificacionRequestDTO.class));
     }
-
     // --- PRUEBAS: evaluarRiesgoTramite (Caminos del Switch) ---
     @Test
     @DisplayName("Debe evaluar riesgo BAJO y pasar a APROBADO_AUTOMATICO")
     void evaluarRiesgo_Bajo() throws Exception {
-        setModoEmergencia(false);
         when(tramiteRepository.findById(idTramiteValido)).thenReturn(Optional.of(tramiteMock));
 
         UsuarioClientResponseDTO uRes = new UsuarioClientResponseDTO();
@@ -288,7 +251,7 @@ class TramiteServiceTest {
     @Test
     @DisplayName("Debe evaluar riesgo ALTO y pasar a RECHAZADO_AUTOMATICO")
     void evaluarRiesgo_Alto() throws Exception {
-        setModoEmergencia(false);
+
         when(tramiteRepository.findById(idTramiteValido)).thenReturn(Optional.of(tramiteMock));
 
         UsuarioClientResponseDTO uRes = new UsuarioClientResponseDTO();
@@ -444,7 +407,7 @@ class TramiteServiceTest {
     @Test
     @DisplayName("Debe evaluar riesgo MEDIO y pasar a REQUIERE_INSPECCION")
     void evaluarRiesgo_Medio() throws Exception {
-        setModoEmergencia(false);
+
         when(tramiteRepository.findById(idTramiteValido)).thenReturn(Optional.of(tramiteMock));
         UsuarioClientResponseDTO uRes = new UsuarioClientResponseDTO();
         uRes.setNroDocumento("123");
@@ -464,7 +427,7 @@ class TramiteServiceTest {
     @Test
     @DisplayName("Debe lanzar ResourceNotFoundException cuando no se encuentra el usuario en evaluación de riesgo")
     void evaluarRiesgo_NoUsuario() throws Exception {
-        setModoEmergencia(false);
+
         when(tramiteRepository.findById(idTramiteValido)).thenReturn(Optional.of(tramiteMock));
         when(usuarioClient.obtenerUsuarioPorId(any())).thenReturn(null);
         assertThrows(ResourceNotFoundException.class, () -> tramiteService.evaluarRiesgoTramite(idTramiteValido));
@@ -473,7 +436,7 @@ class TramiteServiceTest {
     @Test
     @DisplayName("Debe lanzar ResourceNotFoundException cuando no se encuentra el vehículo en evaluación de riesgo")
     void evaluarRiesgo_NoVehiculo() throws Exception {
-        setModoEmergencia(false);
+      
         when(tramiteRepository.findById(idTramiteValido)).thenReturn(Optional.of(tramiteMock));
         UsuarioClientResponseDTO uRes = new UsuarioClientResponseDTO();
         uRes.setNroDocumento("123");
@@ -506,7 +469,7 @@ class TramiteServiceTest {
     @Test
     @DisplayName("Debe lanzar ResourceNotFoundException al evaluar riesgo de trámite no existente")
     void evaluarRiesgo_NoTramite() throws Exception {
-        setModoEmergencia(false);
+    
         when(tramiteRepository.findById(idTramiteValido)).thenReturn(Optional.empty());
         assertThrows(ResourceNotFoundException.class, () -> tramiteService.evaluarRiesgoTramite(idTramiteValido));
     }
